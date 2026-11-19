@@ -13,7 +13,12 @@ public final class GameEndDialogs {
     private GameEndDialogs() {
     }
 
-    /** Shows the game-over dialog; closing it is treated as choosing a level. */
+    /**
+     * Shows the game-over dialog; closing it is treated as choosing a level.
+     *
+     * @param parent parent component for the dialog
+     * @return selected follow-up action
+     */
     public static GameOverChoice showGameOver(Component parent) {
         int selected = JOptionPane.showOptionDialog(
                 parent,
@@ -27,7 +32,11 @@ public final class GameEndDialogs {
         return selected == 0 ? GameOverChoice.RETRY : GameOverChoice.CHOOSE_LEVEL;
     }
 
-    /** Shows the win dialog before returning to level selection. */
+    /**
+     * Shows the win dialog before returning to level selection.
+     *
+     * @param parent parent component for the dialog
+     */
     public static void showWin(Component parent) {
         JOptionPane.showOptionDialog(
                 parent,
@@ -40,7 +49,13 @@ public final class GameEndDialogs {
                 WIN_OPTIONS[0]);
     }
 
-    /** Runs the action associated with a game-over choice. */
+    /**
+     * Runs the action associated with a game-over choice.
+     *
+     * @param choice selected follow-up action
+     * @param onRetry starts a new game at the same level
+     * @param onChooseLevel returns to level selection
+     */
     public static void dispatchGameOverChoice(GameOverChoice choice,
                                               Runnable onRetry,
                                               Runnable onChooseLevel) {
@@ -53,13 +68,20 @@ public final class GameEndDialogs {
         }
     }
 
-    /** Runs after the win dialog has been dismissed. */
+    /**
+     * Runs after the win dialog has been dismissed.
+     *
+     * @param onChooseLevel returns to level selection
+     */
     public static void dispatchWinChoice(Runnable onChooseLevel) {
         Objects.requireNonNull(onChooseLevel, "onChooseLevel").run();
     }
 
+    /** Available follow-up actions after a loss. */
     public enum GameOverChoice {
+        /** Starts a new puzzle at the same difficulty. */
         RETRY,
+        /** Returns to level selection. */
         CHOOSE_LEVEL
     }
 }

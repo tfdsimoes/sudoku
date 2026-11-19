@@ -42,6 +42,12 @@ public final class SudokuBoardPanel extends JPanel {
     private final Map<Integer, JButton> numberButtons = new LinkedHashMap<>();
     private Position selectedCell = new Position(0, 0);
 
+    /**
+     * Creates the board and number pad for a session.
+     *
+     * @param session active game session
+     * @param onMove callback for the outcome of each attempted move
+     */
     public SudokuBoardPanel(GameSession session, Consumer<GameSession.MoveResult> onMove) {
         this.session = Objects.requireNonNull(session, "session");
         this.onMove = Objects.requireNonNull(onMove, "onMove");
@@ -55,7 +61,13 @@ public final class SudokuBoardPanel extends JPanel {
         installKeyBindings(boardGrid);
     }
 
-    /** Selects a board cell and gives it keyboard focus. */
+    /**
+     * Selects a board cell and gives it keyboard focus.
+     *
+     * @param row zero-based row index
+     * @param col zero-based column index
+     * @throws IndexOutOfBoundsException if the cell is outside the board
+     */
     public void selectCell(int row, int col) {
         session.getBoard().getValue(row, col);
         selectedCell = new Position(row, col);
@@ -63,6 +75,11 @@ public final class SudokuBoardPanel extends JPanel {
         boardGrid.requestFocusInWindow();
     }
 
+    /**
+     * Returns the currently selected cell.
+     *
+     * @return selected zero-based board position
+     */
     public Position getSelectedCell() {
         return selectedCell;
     }
@@ -70,6 +87,10 @@ public final class SudokuBoardPanel extends JPanel {
     /**
      * Maps a pointer coordinate to a cell in a centered square board.
      *
+     * @param x pointer x-coordinate
+     * @param y pointer y-coordinate
+     * @param width component width
+     * @param height component height
      * @return the cell, or empty when the point is outside the board
      */
     public static Optional<Position> cellAtPoint(int x, int y, int width, int height) {
@@ -87,7 +108,12 @@ public final class SudokuBoardPanel extends JPanel {
                 localX * Board.SIZE / boardSize));
     }
 
-    /** Maps a digit or numpad key code to its Sudoku value. */
+    /**
+     * Maps a digit or numpad key code to its Sudoku value.
+     *
+     * @param keyCode AWT key code
+     * @return the digit, or empty if the key is not 1-9
+     */
     public static OptionalInt digitForKeyCode(int keyCode) {
         if (keyCode >= KeyEvent.VK_1 && keyCode <= KeyEvent.VK_9) {
             return OptionalInt.of(keyCode - KeyEvent.VK_0);

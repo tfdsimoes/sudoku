@@ -5,8 +5,11 @@ package com.test.sudoku.model;
  * the generated puzzle will have. Fewer givens means a harder puzzle.
  */
 public enum Difficulty {
+    /** 38-40 pre-filled cells. */
     EASY(38, 40),
+    /** 30-34 pre-filled cells. */
     MEDIUM(30, 34),
+    /** 24-28 pre-filled cells. */
     HARD(24, 28);
 
     private final int minGivens;
@@ -17,10 +20,20 @@ public enum Difficulty {
         this.maxGivens = maxGivens;
     }
 
+    /**
+     * Returns the minimum number of clues used for this level.
+     *
+     * @return minimum clue count
+     */
     public int minGivens() {
         return minGivens;
     }
 
+    /**
+     * Returns the maximum number of clues used for this level.
+     *
+     * @return maximum clue count
+     */
     public int maxGivens() {
         return maxGivens;
     }

@@ -35,6 +35,11 @@ public final class MainMenuPanel extends JPanel {
 
     private final Map<Difficulty, JButton> difficultyButtons = new EnumMap<>(Difficulty.class);
 
+    /**
+     * Creates the styled level-selection panel.
+     *
+     * @param onDifficultySelected action invoked when a level is selected
+     */
     public MainMenuPanel(Consumer<Difficulty> onDifficultySelected) {
         Objects.requireNonNull(onDifficultySelected, "onDifficultySelected");
         setLayout(new BorderLayout());

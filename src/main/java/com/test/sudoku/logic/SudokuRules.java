@@ -16,6 +16,12 @@ public final class SudokuRules {
     /**
      * Returns true when {@code value} can be placed at the cell without breaking a rule.
      * The cell's current content is ignored.
+     *
+     * @param board board to check
+     * @param row zero-based row index
+     * @param col zero-based column index
+     * @param value digit to place
+     * @return whether the placement is valid
      */
     public static boolean isValidPlacement(Board board, int row, int col, int value) {
         return isDigit(value) && conflictsFor(board, row, col, value).isEmpty();
@@ -24,6 +30,12 @@ public final class SudokuRules {
     /**
      * Returns the other cells in the same row, column or box that already hold {@code value}.
      * The cell itself is never included.
+     *
+     * @param board board to inspect
+     * @param row zero-based row index
+     * @param col zero-based column index
+     * @param value digit to find
+     * @return conflicting cell positions
      */
     public static List<Position> conflictsFor(Board board, int row, int col, int value) {
         List<Position> conflicts = new ArrayList<>();
@@ -44,7 +56,12 @@ public final class SudokuRules {
         return conflicts;
     }
 
-    /** Returns true when every cell is filled and no rule is broken. */
+    /**
+     * Returns true when every cell is filled and no rule is broken.
+     *
+     * @param board board to inspect
+     * @return whether the board is a completed valid Sudoku
+     */
     public static boolean isSolved(Board board) {
         for (int row = 0; row < Board.SIZE; row++) {
             for (int col = 0; col < Board.SIZE; col++) {

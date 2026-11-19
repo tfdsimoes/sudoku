@@ -14,11 +14,17 @@ public final class SudokuGenerator {
     private static final int ALL_DIGITS = 0b1111111110;
     private static final int MAX_ATTEMPTS = 50;
 
+    /** Creates a generator. */
+    public SudokuGenerator() {
+    }
+
     /**
      * Generates a puzzle at the requested difficulty using a fresh random seed.
      *
      * @param difficulty the target difficulty
      * @return a puzzle with a unique solution and a given count in the difficulty range
+     * @throws NullPointerException if difficulty is null
+     * @throws IllegalStateException if no puzzle in the requested range is found
      */
     public Board generate(Difficulty difficulty) {
         return generate(difficulty, new Random());
@@ -30,6 +36,7 @@ public final class SudokuGenerator {
      * @param difficulty the target difficulty
      * @param seed the random seed
      * @return a puzzle with a unique solution and a given count in the difficulty range
+     * @throws NullPointerException if difficulty is null
      * @throws IllegalStateException if no puzzle in the requested range is found
      */
     public Board generate(Difficulty difficulty, long seed) {
