@@ -32,3 +32,9 @@ overload is available to reproduce puzzles in tests.
 entries, and records an incorrect entry as a strike without changing the board.
 After three strikes, further moves are rejected until a new game is started.
 Givens cannot be edited; entering 0 clears a player-entered cell.
+
+## Menu
+
+The Swing menu offers Easy, Medium, and Hard selections and reports the selected
+difficulty to its host window. Each option shows its clue range and a short level
+description.
