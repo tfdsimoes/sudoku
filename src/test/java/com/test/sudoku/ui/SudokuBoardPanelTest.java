@@ -12,13 +12,17 @@ import com.test.sudoku.model.Position;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics2D;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.Action;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import org.junit.jupiter.api.Test;
 
@@ -87,12 +91,12 @@ class SudokuBoardPanelTest {
     }
 
     @Test
-    void numberPadDoesNotDefaultToTopLeftBeforeCellSelection() throws Exception {
+    void keyboardInputDoesNotDefaultToTopLeftBeforeCellSelection() throws Exception {
         GameSession session = new GameSession(Difficulty.EASY, 8);
         Board originalBoard = session.getBoard();
         SwingUtilities.invokeAndWait(() -> {
             SudokuBoardPanel panel = new SudokuBoardPanel(session, result -> { });
-            panel.getNumberButton(1).doClick();
+            invokeDigitAction((JComponent) panel.getComponent(1), KeyEvent.VK_1);
             assertTrue(panel.getSelectedCell().isEmpty());
             assertEquals("Select a cell before entering a number",
                     ((JLabel) panel.getComponent(0)).getText());
@@ -122,7 +126,7 @@ class SudokuBoardPanelTest {
     }
 
     @Test
-    void onScreenNumberButtonEntersValueAtSelectedCell() throws Exception {
+    void keyboardDigitEntersValueAtSelectedCell() throws Exception {
         GameSession session = new GameSession(Difficulty.EASY, 11);
         Board puzzle = session.getBoard();
         Board solution = SudokuSolver.solve(puzzle).orElseThrow();
@@ -136,12 +140,24 @@ class SudokuBoardPanelTest {
                     emptyCell.col() * 60 + 30, emptyCell.row() * 60 + 30,
                     1, MouseEvent.BUTTON1));
             assertEquals(Optional.of(emptyCell), panel.getSelectedCell());
-            panel.getNumberButton(solution.getValue(emptyCell.row(), emptyCell.col())).doClick();
+            int value = solution.getValue(emptyCell.row(), emptyCell.col());
+            invokeDigitAction((JComponent) grid, KeyEvent.VK_0 + value);
         });
 
         assertEquals(GameSession.MoveResult.CORRECT, result.get());
         assertEquals(solution.getValue(emptyCell.row(), emptyCell.col()),
                 session.getBoard().getValue(emptyCell.row(), emptyCell.col()));
+    }
+
+    @Test
+    void bottomControlContainsOnlyClearButton() throws Exception {
+        AtomicReference<SudokuBoardPanel> panelRef = new AtomicReference<>();
+        SwingUtilities.invokeAndWait(() ->
+                panelRef.set(new SudokuBoardPanel(
+                        new GameSession(Difficulty.EASY, 9), result -> { })));
+
+        assertEquals(3, panelRef.get().getComponentCount());
+        assertEquals("Clear", panelRef.get().getClearButton().getText());
     }
 
     @Test
@@ -156,7 +172,7 @@ class SudokuBoardPanelTest {
         SwingUtilities.invokeAndWait(() -> {
             SudokuBoardPanel panel = new SudokuBoardPanel(session, result::set);
             panel.selectCell(emptyCell.row(), emptyCell.col());
-            panel.getNumberButton(0).doClick();
+            panel.getClearButton().doClick();
         });
 
         assertEquals(GameSession.MoveResult.CLEARED, result.get());
@@ -173,6 +189,14 @@ class SudokuBoardPanelTest {
             }
         }
         throw new AssertionError("Generated puzzle must have empty cells");
+    }
+
+    private static void invokeDigitAction(JComponent component, int keyCode) {
+        Object actionKey = component.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                .get(KeyStroke.getKeyStroke(keyCode, 0));
+        Action action = component.getActionMap().get(actionKey);
+        action.actionPerformed(new ActionEvent(
+                component, ActionEvent.ACTION_PERFORMED, "keyboard-digit"));
     }
 
     private static MouseEvent mouseEvent(Component source, int eventId, int x, int y,
