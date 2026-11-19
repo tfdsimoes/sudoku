@@ -13,8 +13,6 @@ import java.awt.RenderingHints;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -40,7 +38,7 @@ public final class SudokuBoardPanel extends JPanel {
     private final GameSession session;
     private final Consumer<GameSession.MoveResult> onMove;
     private final BoardGrid boardGrid;
-    private final Map<Integer, JButton> numberButtons = new LinkedHashMap<>();
+    private final JButton clearButton;
     private final JLabel selectionHint = new JLabel("Select a cell before entering a number",
             SwingConstants.CENTER);
     private Position selectedCell;
@@ -60,9 +58,10 @@ public final class SudokuBoardPanel extends JPanel {
 
         selectionHint.setForeground(new Color(70, 70, 70));
         boardGrid = new BoardGrid();
+        clearButton = createClearButton();
         add(selectionHint, BorderLayout.NORTH);
         add(boardGrid, BorderLayout.CENTER);
-        add(createNumberPad(), BorderLayout.SOUTH);
+        add(clearButton, BorderLayout.SOUTH);
         installKeyBindings(boardGrid);
     }
 
@@ -130,35 +129,20 @@ public final class SudokuBoardPanel extends JPanel {
         return OptionalInt.empty();
     }
 
-    JButton getNumberButton(int value) {
-        return numberButtons.get(value);
+    JButton getClearButton() {
+        return clearButton;
     }
 
-    private JPanel createNumberPad() {
-        JPanel numberPad = new JPanel(new java.awt.GridLayout(1, 10, 6, 0));
-        numberPad.setBackground(BOARD_WHITE);
-        for (int value = 1; value <= Board.SIZE; value++) {
-            JButton button = createNumberButton(Integer.toString(value), value);
-            numberButtons.put(value, button);
-            numberPad.add(button);
-        }
-        JButton clearButton = createNumberButton("Clear", 0);
-        clearButton.getAccessibleContext().setAccessibleName("Clear selected cell");
-        numberButtons.put(0, clearButton);
-        numberPad.add(clearButton);
-        return numberPad;
-    }
-
-    private JButton createNumberButton(String label, int value) {
-        JButton button = new JButton(label);
+    private JButton createClearButton() {
+        JButton button = new JButton("Clear");
         button.getAccessibleContext().setAccessibleName(
-                value == 0 ? "Clear selected cell" : "Enter " + value);
+                "Clear selected cell");
         button.setHorizontalAlignment(SwingConstants.CENTER);
         button.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
         button.setForeground(GRID_BLACK);
         button.setBackground(BOARD_WHITE);
         button.setOpaque(true);
-        button.addActionListener(event -> enterValue(value));
+        button.addActionListener(event -> enterValue(0));
         return button;
     }
 
