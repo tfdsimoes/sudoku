@@ -159,7 +159,6 @@ public final class SudokuBoardPanel extends JPanel {
         selectCell(position.row(), position.col());
         selectionHint.setText("Hint: row " + (position.row() + 1)
                 + ", column " + (position.col() + 1) + " is " + revealed.value());
-        boardGrid.repaint();
         onMove.accept(revealed.result());
     }
 
