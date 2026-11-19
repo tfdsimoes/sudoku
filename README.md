@@ -76,3 +76,6 @@ mvn verify
 
 For a desktop smoke test, launch the app and check each difficulty, correct and
 incorrect entries, the three-strike game-over choices, retry, and the win dialog.
+
+GitHub Actions also runs `mvn verify` for pull requests and pushes to `main` or
+`develop`.
