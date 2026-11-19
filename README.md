@@ -61,6 +61,11 @@ src/test/java/com/test/sudoku/
 
 The generator exposes a seeded overload so puzzles can be reproduced in tests.
 
+## Repository hygiene
+
+Local IntelliJ project settings (`.idea/` and `*.iml`) and Maven build output are
+ignored rather than committed.
+
 ## Verification
 
 Run the complete Maven verification lifecycle, including the automated tests:
