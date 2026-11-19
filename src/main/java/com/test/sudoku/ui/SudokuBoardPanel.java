@@ -227,6 +227,8 @@ public final class SudokuBoardPanel extends JPanel {
             super.paintComponent(graphics);
             Graphics2D g = (Graphics2D) graphics.create();
             try {
+                g.setColor(BOARD_WHITE);
+                g.fillRect(0, 0, getWidth(), getHeight());
                 g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                         RenderingHints.VALUE_ANTIALIAS_ON);
                 int side = Math.min(getWidth(), getHeight());

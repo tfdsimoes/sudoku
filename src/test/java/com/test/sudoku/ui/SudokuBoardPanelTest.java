@@ -9,9 +9,12 @@ import com.test.sudoku.logic.SudokuSolver;
 import com.test.sudoku.model.Board;
 import com.test.sudoku.model.Difficulty;
 import com.test.sudoku.model.Position;
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.concurrent.atomic.AtomicReference;
@@ -57,6 +60,30 @@ class SudokuBoardPanelTest {
         });
 
         assertEquals(Optional.of(new Position(5, 5)), panelRef.get().getSelectedCell());
+    }
+
+    @Test
+    void repaintingAfterSelectionChangeClearsPreviousHighlight() throws Exception {
+        GameSession session = new GameSession(Difficulty.EASY, 9);
+        AtomicReference<Integer> previousCellPixel = new AtomicReference<>();
+        SwingUtilities.invokeAndWait(() -> {
+            SudokuBoardPanel panel = new SudokuBoardPanel(session, result -> { });
+            Component grid = panel.getComponent(1);
+            grid.setSize(540, 540);
+            BufferedImage image = new BufferedImage(540, 540, BufferedImage.TYPE_INT_RGB);
+            Graphics2D graphics = image.createGraphics();
+            try {
+                panel.selectCell(5, 5);
+                grid.paint(graphics);
+                panel.selectCell(2, 2);
+                grid.paint(graphics);
+                previousCellPixel.set(image.getRGB(301, 301));
+            } finally {
+                graphics.dispose();
+            }
+        });
+
+        assertEquals(Color.WHITE.getRGB(), previousCellPixel.get());
     }
 
     @Test
