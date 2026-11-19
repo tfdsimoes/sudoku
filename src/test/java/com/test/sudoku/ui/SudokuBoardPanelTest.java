@@ -15,6 +15,7 @@ import java.awt.event.MouseEvent;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import org.junit.jupiter.api.Test;
 
@@ -26,7 +27,7 @@ class SudokuBoardPanelTest {
         AtomicReference<SudokuBoardPanel> panelRef = new AtomicReference<>();
         SwingUtilities.invokeAndWait(() -> {
             SudokuBoardPanel panel = new SudokuBoardPanel(session, result -> { });
-            Component grid = panel.getComponent(0);
+            Component grid = panel.getComponent(1);
             grid.setSize(540, 540);
             grid.dispatchEvent(mouseEvent(grid, MouseEvent.MOUSE_PRESSED,
                     300, 300, 1, MouseEvent.BUTTON1));
@@ -37,23 +38,40 @@ class SudokuBoardPanelTest {
             panelRef.set(panel);
         });
 
-        assertEquals(new Position(0, 0), panelRef.get().getSelectedCell());
+        assertEquals(Optional.of(new Position(5, 5)), panelRef.get().getSelectedCell());
+        assertEquals("Selected row 6, column 6",
+                ((JLabel) panelRef.get().getComponent(0)).getText());
     }
 
     @Test
-    void completedLeftClickSelectsTheCell() throws Exception {
+    void leftButtonPressSelectsCellImmediately() throws Exception {
         GameSession session = new GameSession(Difficulty.EASY, 9);
         AtomicReference<SudokuBoardPanel> panelRef = new AtomicReference<>();
         SwingUtilities.invokeAndWait(() -> {
             SudokuBoardPanel panel = new SudokuBoardPanel(session, result -> { });
-            Component grid = panel.getComponent(0);
+            Component grid = panel.getComponent(1);
             grid.setSize(540, 540);
-            grid.dispatchEvent(mouseEvent(grid, MouseEvent.MOUSE_CLICKED,
+            grid.dispatchEvent(mouseEvent(grid, MouseEvent.MOUSE_PRESSED,
                     300, 300, 1, MouseEvent.BUTTON1));
             panelRef.set(panel);
         });
 
-        assertEquals(new Position(5, 5), panelRef.get().getSelectedCell());
+        assertEquals(Optional.of(new Position(5, 5)), panelRef.get().getSelectedCell());
+    }
+
+    @Test
+    void numberPadDoesNotDefaultToTopLeftBeforeCellSelection() throws Exception {
+        GameSession session = new GameSession(Difficulty.EASY, 8);
+        Board originalBoard = session.getBoard();
+        SwingUtilities.invokeAndWait(() -> {
+            SudokuBoardPanel panel = new SudokuBoardPanel(session, result -> { });
+            panel.getNumberButton(1).doClick();
+            assertTrue(panel.getSelectedCell().isEmpty());
+            assertEquals("Select a cell before entering a number",
+                    ((JLabel) panel.getComponent(0)).getText());
+        });
+
+        assertEquals(originalBoard, session.getBoard());
     }
 
     @Test
@@ -85,7 +103,12 @@ class SudokuBoardPanelTest {
         AtomicReference<GameSession.MoveResult> result = new AtomicReference<>();
         SwingUtilities.invokeAndWait(() -> {
             SudokuBoardPanel panel = new SudokuBoardPanel(session, result::set);
-            panel.selectCell(emptyCell.row(), emptyCell.col());
+            Component grid = panel.getComponent(1);
+            grid.setSize(540, 540);
+            grid.dispatchEvent(mouseEvent(grid, MouseEvent.MOUSE_PRESSED,
+                    emptyCell.col() * 60 + 30, emptyCell.row() * 60 + 30,
+                    1, MouseEvent.BUTTON1));
+            assertEquals(Optional.of(emptyCell), panel.getSelectedCell());
             panel.getNumberButton(solution.getValue(emptyCell.row(), emptyCell.col())).doClick();
         });
 

@@ -26,8 +26,9 @@ keeps another unique puzzle within the selected difficulty range when available.
 
 ## Controls
 
-- Select a cell with a completed left-click. Dragging across the board does not
-  change the selected cell.
+- Select a cell with the left mouse button; it highlights immediately on press.
+  Dragging across the board does not move the selection. The game asks you to
+  select a cell first, and ignores number input until one is selected.
 - Enter a digit with the keyboard or on-screen number pad.
 - Press Backspace or Delete, or click Clear, to erase a player-entered value.
 - The selected cell is highlighted in light gray. The board and its numbers are

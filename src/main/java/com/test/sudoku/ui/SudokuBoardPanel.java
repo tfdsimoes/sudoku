@@ -23,6 +23,7 @@ import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
@@ -40,7 +41,9 @@ public final class SudokuBoardPanel extends JPanel {
     private final Consumer<GameSession.MoveResult> onMove;
     private final BoardGrid boardGrid;
     private final Map<Integer, JButton> numberButtons = new LinkedHashMap<>();
-    private Position selectedCell = new Position(0, 0);
+    private final JLabel selectionHint = new JLabel("Select a cell before entering a number",
+            SwingConstants.CENTER);
+    private Position selectedCell;
 
     /**
      * Creates the board and number pad for a session.
@@ -55,7 +58,9 @@ public final class SudokuBoardPanel extends JPanel {
         setBackground(BOARD_WHITE);
         setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 
+        selectionHint.setForeground(new Color(70, 70, 70));
         boardGrid = new BoardGrid();
+        add(selectionHint, BorderLayout.NORTH);
         add(boardGrid, BorderLayout.CENTER);
         add(createNumberPad(), BorderLayout.SOUTH);
         installKeyBindings(boardGrid);
@@ -71,6 +76,7 @@ public final class SudokuBoardPanel extends JPanel {
     public void selectCell(int row, int col) {
         session.getBoard().getValue(row, col);
         selectedCell = new Position(row, col);
+        selectionHint.setText("Selected row " + (row + 1) + ", column " + (col + 1));
         boardGrid.repaint();
         boardGrid.requestFocusInWindow();
     }
@@ -78,10 +84,10 @@ public final class SudokuBoardPanel extends JPanel {
     /**
      * Returns the currently selected cell.
      *
-     * @return selected zero-based board position
+     * @return selected zero-based board position, or empty if no cell is selected
      */
-    public Position getSelectedCell() {
-        return selectedCell;
+    public Optional<Position> getSelectedCell() {
+        return Optional.ofNullable(selectedCell);
     }
 
     /**
@@ -187,6 +193,10 @@ public final class SudokuBoardPanel extends JPanel {
     }
 
     private void enterValue(int value) {
+        if (selectedCell == null) {
+            selectionHint.setText("Select a cell before entering a number");
+            return;
+        }
         GameSession.MoveResult result = session.enterValue(
                 selectedCell.row(), selectedCell.col(), value);
         boardGrid.repaint();
@@ -203,8 +213,8 @@ public final class SudokuBoardPanel extends JPanel {
             setMinimumSize(new Dimension(270, 270));
             addMouseListener(new MouseAdapter() {
                 @Override
-                public void mouseClicked(MouseEvent event) {
-                    if (event.getButton() == MouseEvent.BUTTON1 && event.getClickCount() == 1) {
+                public void mousePressed(MouseEvent event) {
+                    if (event.getButton() == MouseEvent.BUTTON1) {
                         cellAtPoint(event.getX(), event.getY(), getWidth(), getHeight())
                                 .ifPresent(position -> selectCell(position.row(), position.col()));
                     }
@@ -240,7 +250,8 @@ public final class SudokuBoardPanel extends JPanel {
                     int x2 = originX + (col + 1) * side / Board.SIZE;
                     int y1 = originY + row * side / Board.SIZE;
                     int y2 = originY + (row + 1) * side / Board.SIZE;
-                    if (selectedCell.row() == row && selectedCell.col() == col) {
+                    if (selectedCell != null
+                            && selectedCell.row() == row && selectedCell.col() == col) {
                         g.setColor(SELECTION_GRAY);
                         g.fillRect(x1, y1, x2 - x1, y2 - y1);
                     }
