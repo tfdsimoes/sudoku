@@ -14,6 +14,8 @@ mvn test
 
 ## Run
 
+Launches the Swing level-selection menu:
+
 ```powershell
 mvn compile
 java -cp target\classes com.test.sudoku.Main
