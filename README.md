@@ -18,3 +18,10 @@ mvn test
 mvn compile
 java -cp target\classes com.test.sudoku.Main
 ```
+
+## Puzzle generation
+
+The generator creates a randomized, valid completed grid, then removes values while
+checking that exactly one solution remains. Difficulty is based on the number of
+pre-filled cells: Easy has 38–40, Medium 30–34, and Hard 24–28. A seeded generator
+overload is available to reproduce puzzles in tests.
