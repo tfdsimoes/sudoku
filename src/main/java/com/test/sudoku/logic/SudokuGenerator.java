@@ -53,25 +53,40 @@ public final class SudokuGenerator {
 
             int targetGivens = difficulty.minGivens()
                     + random.nextInt(difficulty.maxGivens() - difficulty.minGivens() + 1);
-            int[][] puzzle = copy(solution);
-            int givens = SIZE * SIZE;
-            int[] positions = shuffledPositions(random);
-            for (int position : positions) {
-                int row = position / SIZE;
-                int col = position % SIZE;
-                int value = puzzle[row][col];
-                puzzle[row][col] = 0;
-                if (SudokuSolver.hasUniqueSolution(new Board(puzzle))) {
-                    givens--;
-                    if (givens == targetGivens) {
-                        return new Board(puzzle);
-                    }
-                } else {
-                    puzzle[row][col] = value;
-                }
+            Board puzzle = removeClues(
+                    solution, difficulty, targetGivens, shuffledPositions(random));
+            if (puzzle != null) {
+                return puzzle;
             }
         }
         throw new IllegalStateException("Could not generate a unique puzzle for " + difficulty);
+    }
+
+    static Board removeClues(int[][] solution, Difficulty difficulty,
+                             int targetGivens, int[] positions) {
+        int[][] puzzle = copy(solution);
+        int givens = SIZE * SIZE;
+        Board inRangeFallback = null;
+        for (int position : positions) {
+            int row = position / SIZE;
+            int col = position % SIZE;
+            int value = puzzle[row][col];
+            puzzle[row][col] = 0;
+            if (SudokuSolver.hasUniqueSolution(new Board(puzzle))) {
+                givens--;
+                if (givens >= difficulty.minGivens() && givens <= difficulty.maxGivens()) {
+                    if (inRangeFallback == null) {
+                        inRangeFallback = new Board(puzzle);
+                    }
+                    if (givens == targetGivens) {
+                        return new Board(puzzle);
+                    }
+                }
+            } else {
+                puzzle[row][col] = value;
+            }
+        }
+        return inRangeFallback;
     }
 
     private static boolean fillRandomly(int[][] grid, Random random) {
