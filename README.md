@@ -21,7 +21,8 @@ A Java 25 desktop Sudoku game built with Swing.
 
 The generator randomizes a complete valid grid, then removes clues only when the
 remaining puzzle still has a unique solution. Clue count is the difficulty
-measure used by this project.
+measure used by this project. If the chosen exact clue target is unreachable, it
+keeps another unique puzzle within the selected difficulty range when available.
 
 ## Controls
 
