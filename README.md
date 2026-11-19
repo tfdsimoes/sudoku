@@ -38,3 +38,9 @@ Givens cannot be edited; entering 0 clears a player-entered cell.
 The Swing menu offers Easy, Medium, and Hard selections and reports the selected
 difficulty to its host window. Each option shows its clue range and a short level
 description.
+
+## Board controls
+
+The board uses a white background with black numbers and grid lines; thicker lines
+separate the 3x3 boxes. Select a cell, then enter 1-9 on the keyboard or use the
+on-screen number pad. Backspace, Delete, or the Clear button removes a player entry.
