@@ -38,13 +38,13 @@ public final class SudokuBoardPanel extends JPanel {
     private final GameSession session;
     private final Consumer<GameSession.MoveResult> onMove;
     private final BoardGrid boardGrid;
-    private final JButton clearButton;
+    private final JButton helpButton;
     private final JLabel selectionHint = new JLabel("Select a cell before entering a number",
             SwingConstants.CENTER);
     private Position selectedCell;
 
     /**
-     * Creates the board and number pad for a session.
+     * Creates the board and controls for a session.
      *
      * @param session active game session
      * @param onMove callback for the outcome of each attempted move
@@ -58,10 +58,10 @@ public final class SudokuBoardPanel extends JPanel {
 
         selectionHint.setForeground(new Color(70, 70, 70));
         boardGrid = new BoardGrid();
-        clearButton = createClearButton();
+        helpButton = createHelpButton();
         add(selectionHint, BorderLayout.NORTH);
         add(boardGrid, BorderLayout.CENTER);
-        add(clearButton, BorderLayout.SOUTH);
+        add(helpButton, BorderLayout.SOUTH);
         installKeyBindings(boardGrid);
     }
 
@@ -129,21 +129,38 @@ public final class SudokuBoardPanel extends JPanel {
         return OptionalInt.empty();
     }
 
-    JButton getClearButton() {
-        return clearButton;
+    JButton getHelpButton() {
+        return helpButton;
     }
 
-    private JButton createClearButton() {
-        JButton button = new JButton("Clear");
-        button.getAccessibleContext().setAccessibleName(
-                "Clear selected cell");
+    private JButton createHelpButton() {
+        JButton button = new JButton("Help");
+        button.getAccessibleContext().setAccessibleName("Reveal a random correct cell");
         button.setHorizontalAlignment(SwingConstants.CENTER);
         button.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
         button.setForeground(GRID_BLACK);
         button.setBackground(BOARD_WHITE);
         button.setOpaque(true);
-        button.addActionListener(event -> enterValue(0));
+        button.addActionListener(event -> revealHint());
         return button;
+    }
+
+    private void revealHint() {
+        Optional<GameSession.Hint> hint = session.revealRandomEmptyCell();
+        if (hint.isEmpty()) {
+            selectionHint.setText(session.isGameOver() || session.isWon()
+                    ? "Help is unavailable after the game ends"
+                    : "No empty cells remain to reveal");
+            return;
+        }
+
+        GameSession.Hint revealed = hint.orElseThrow();
+        Position position = revealed.position();
+        selectCell(position.row(), position.col());
+        selectionHint.setText("Hint: row " + (position.row() + 1)
+                + ", column " + (position.col() + 1) + " is " + revealed.value());
+        boardGrid.repaint();
+        onMove.accept(revealed.result());
     }
 
     private void installKeyBindings(JComponent component) {

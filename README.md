@@ -30,7 +30,9 @@ keeps another unique puzzle within the selected difficulty range when available.
   Dragging across the board does not move the selection. The game asks you to
   select a cell first, and ignores number input until one is selected.
 - Enter a digit with the keyboard's number row or numeric keypad.
-- Press Backspace or Delete, or click Clear, to erase a player-entered value.
+- Press Backspace or Delete to erase a player-entered value.
+- Click Help to reveal the correct value in a random empty cell without adding a
+  strike. The revealed cell becomes selected.
 - The selected cell is highlighted in light gray. The board and its numbers are
   white and black, with thicker black lines separating the 3x3 boxes.
 

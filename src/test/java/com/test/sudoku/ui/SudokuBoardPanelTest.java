@@ -96,7 +96,7 @@ class SudokuBoardPanelTest {
         Board originalBoard = session.getBoard();
         SwingUtilities.invokeAndWait(() -> {
             SudokuBoardPanel panel = new SudokuBoardPanel(session, result -> { });
-            invokeDigitAction((JComponent) panel.getComponent(1), KeyEvent.VK_1);
+            invokeKeyAction((JComponent) panel.getComponent(1), KeyEvent.VK_1);
             assertTrue(panel.getSelectedCell().isEmpty());
             assertEquals("Select a cell before entering a number",
                     ((JLabel) panel.getComponent(0)).getText());
@@ -141,7 +141,7 @@ class SudokuBoardPanelTest {
                     1, MouseEvent.BUTTON1));
             assertEquals(Optional.of(emptyCell), panel.getSelectedCell());
             int value = solution.getValue(emptyCell.row(), emptyCell.col());
-            invokeDigitAction((JComponent) grid, KeyEvent.VK_0 + value);
+            invokeKeyAction((JComponent) grid, KeyEvent.VK_0 + value);
         });
 
         assertEquals(GameSession.MoveResult.CORRECT, result.get());
@@ -150,18 +150,39 @@ class SudokuBoardPanelTest {
     }
 
     @Test
-    void bottomControlContainsOnlyClearButton() throws Exception {
+    void bottomControlContainsHelpButton() throws Exception {
         AtomicReference<SudokuBoardPanel> panelRef = new AtomicReference<>();
         SwingUtilities.invokeAndWait(() ->
                 panelRef.set(new SudokuBoardPanel(
                         new GameSession(Difficulty.EASY, 9), result -> { })));
 
         assertEquals(3, panelRef.get().getComponentCount());
-        assertEquals("Clear", panelRef.get().getClearButton().getText());
+        assertEquals("Help", panelRef.get().getHelpButton().getText());
     }
 
     @Test
-    void clearButtonClearsSelectedPlayerEntry() throws Exception {
+    void helpButtonRevealsCorrectValueInAnEmptyCell() throws Exception {
+        GameSession session = new GameSession(Difficulty.EASY, 12);
+        Board puzzle = session.getBoard();
+        Board solution = SudokuSolver.solve(puzzle).orElseThrow();
+        AtomicReference<SudokuBoardPanel> panelRef = new AtomicReference<>();
+        AtomicReference<GameSession.MoveResult> result = new AtomicReference<>();
+        SwingUtilities.invokeAndWait(() -> {
+            SudokuBoardPanel panel = new SudokuBoardPanel(session, result::set);
+            panel.getHelpButton().doClick();
+            panelRef.set(panel);
+        });
+
+        Position position = panelRef.get().getSelectedCell().orElseThrow();
+        assertTrue(puzzle.isEmpty(position.row(), position.col()));
+        assertEquals(solution.getValue(position.row(), position.col()),
+                session.getBoard().getValue(position.row(), position.col()));
+        assertEquals(GameSession.MoveResult.CORRECT, result.get());
+        assertEquals(0, session.getStrikes());
+    }
+
+    @Test
+    void backspaceClearsSelectedPlayerEntry() throws Exception {
         GameSession session = new GameSession(Difficulty.EASY, 12);
         Board puzzle = session.getBoard();
         Board solution = SudokuSolver.solve(puzzle).orElseThrow();
@@ -172,7 +193,7 @@ class SudokuBoardPanelTest {
         SwingUtilities.invokeAndWait(() -> {
             SudokuBoardPanel panel = new SudokuBoardPanel(session, result::set);
             panel.selectCell(emptyCell.row(), emptyCell.col());
-            panel.getClearButton().doClick();
+            invokeKeyAction((JComponent) panel.getComponent(1), KeyEvent.VK_BACK_SPACE);
         });
 
         assertEquals(GameSession.MoveResult.CLEARED, result.get());
@@ -191,12 +212,12 @@ class SudokuBoardPanelTest {
         throw new AssertionError("Generated puzzle must have empty cells");
     }
 
-    private static void invokeDigitAction(JComponent component, int keyCode) {
+    private static void invokeKeyAction(JComponent component, int keyCode) {
         Object actionKey = component.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
                 .get(KeyStroke.getKeyStroke(keyCode, 0));
         Action action = component.getActionMap().get(actionKey);
         action.actionPerformed(new ActionEvent(
-                component, ActionEvent.ACTION_PERFORMED, "keyboard-digit"));
+                component, ActionEvent.ACTION_PERFORMED, "keyboard-input"));
     }
 
     private static MouseEvent mouseEvent(Component source, int eventId, int x, int y,
