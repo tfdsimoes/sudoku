@@ -1,8 +1,11 @@
 package com.test.sudoku;
 
+import com.test.sudoku.ui.GameController;
+import javax.swing.SwingUtilities;
+
 public class Main {
 
     public static void main(String[] args) {
-        System.out.println("Hello, World!");
+        SwingUtilities.invokeLater(() -> new GameController().showMenu());
     }
 }
