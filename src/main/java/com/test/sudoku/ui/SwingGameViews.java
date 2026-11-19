@@ -10,6 +10,11 @@ public final class SwingGameViews implements GameController.ViewHost {
 
     private MainMenuFrame frame;
 
+    /** Creates a Swing view host. */
+    public SwingGameViews() {
+    }
+
+    /** {@inheritDoc} */
     @Override
     public void showMenu(Consumer<Difficulty> onDifficultySelected) {
         if (frame == null) {
@@ -26,6 +31,7 @@ public final class SwingGameViews implements GameController.ViewHost {
         frame.repaint();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void showGame(GameSession session, Runnable onRetry, Runnable onChooseLevel) {
         if (frame == null) {

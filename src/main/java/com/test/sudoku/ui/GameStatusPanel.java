@@ -15,6 +15,11 @@ public final class GameStatusPanel extends JPanel {
     private static final Color TEXT_COLOR = new Color(35, 53, 69);
     private final JLabel strikesLabel = new JLabel("", SwingConstants.CENTER);
 
+    /**
+     * Creates the HUD initialized from the active game session.
+     *
+     * @param session active game session
+     */
     public GameStatusPanel(GameSession session) {
         setBackground(Color.WHITE);
         setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
@@ -24,7 +29,11 @@ public final class GameStatusPanel extends JPanel {
         update(session);
     }
 
-    /** Refreshes the displayed strike count from the game session. */
+    /**
+     * Refreshes the displayed strike count from the game session.
+     *
+     * @param session active game session
+     */
     public void update(GameSession session) {
         Objects.requireNonNull(session, "session");
         strikesLabel.setText("Strikes left: " + session.getRemainingStrikes());

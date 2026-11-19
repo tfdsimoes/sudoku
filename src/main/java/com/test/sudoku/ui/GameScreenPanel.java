@@ -15,6 +15,13 @@ public final class GameScreenPanel extends JPanel {
     private final GameStatusPanel statusPanel;
     private final SudokuBoardPanel boardPanel;
 
+    /**
+     * Creates a game screen for a session.
+     *
+     * @param session active game session
+     * @param onRetry starts a new puzzle at the same level
+     * @param onChooseLevel returns to the level-selection menu
+     */
     public GameScreenPanel(GameSession session, Runnable onRetry, Runnable onChooseLevel) {
         this.session = Objects.requireNonNull(session, "session");
         this.onRetry = Objects.requireNonNull(onRetry, "onRetry");

@@ -19,6 +19,9 @@ public final class SudokuSolver {
     /**
      * Returns a solved copy of the board that keeps its givens, or empty when the board
      * has no solution.
+     *
+     * @param board board to solve
+     * @return a solved copy, or empty if no solution exists
      */
     public static Optional<Board> solve(Board board) {
         int[][] first = firstSolution(board.toArray());
@@ -39,6 +42,10 @@ public final class SudokuSolver {
     /**
      * Counts solutions, stopping as soon as {@code limit} is reached.
      * Use a limit of 2 to test for uniqueness.
+     *
+     * @param board board to solve
+     * @param limit maximum number of solutions to count
+     * @return the solution count, capped at limit
      */
     public static int countSolutions(Board board, int limit) {
         if (limit <= 0) {
@@ -47,7 +54,12 @@ public final class SudokuSolver {
         return count(board.toArray(), limit);
     }
 
-    /** Returns true when the board has exactly one solution. */
+    /**
+     * Returns true when the board has exactly one solution.
+     *
+     * @param board board to check
+     * @return whether exactly one solution exists
+     */
     public static boolean hasUniqueSolution(Board board) {
         return countSolutions(board, 2) == 1;
     }

@@ -8,8 +8,14 @@ import javax.swing.JFrame;
 /** Window hosting the Sudoku level-selection menu. */
 public final class MainMenuFrame extends JFrame {
 
+    /** Window title used on the level-selection menu. */
     public static final String WINDOW_TITLE = "Sudoku - Choose Your Level";
 
+    /**
+     * Creates the menu window.
+     *
+     * @param onDifficultySelected action invoked when a level is selected
+     */
     public MainMenuFrame(Consumer<Difficulty> onDifficultySelected) {
         super(WINDOW_TITLE);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

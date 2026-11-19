@@ -1,50 +1,61 @@
-# sudoku
-Game of Sudoku in Java
+# Sudoku
 
-## Requirements
+A Java 25 desktop Sudoku game built with Swing.
 
-- JDK 25
-- Apache Maven 3.9+
+## Rules
 
-## Build and test
+- The board is a 9x9 grid divided into nine 3x3 boxes.
+- Every row, column, and box must contain each digit from 1 to 9 exactly once.
+- Pre-filled clues are fixed and cannot be changed.
+- A generated puzzle has exactly one solution. An entered value must match that
+  solution; an incorrect entry is rejected and adds a strike.
+- The game ends after three strikes. A completed puzzle returns to level selection.
+
+## Difficulty and generation
+
+| Level | Pre-filled clues |
+|---|---:|
+| Easy | 38-40 |
+| Medium | 30-34 |
+| Hard | 24-28 |
+
+The generator randomizes a complete valid grid, then removes clues only when the
+remaining puzzle still has a unique solution. Clue count is the difficulty
+measure used by this project.
+
+## Controls
+
+- Select a cell by clicking it.
+- Enter a digit with the keyboard or on-screen number pad.
+- Press Backspace or Delete, or click Clear, to erase a player-entered value.
+- The selected cell is highlighted in light gray. The board and its numbers are
+  white and black, with thicker black lines separating the 3x3 boxes.
+
+## Build and run
+
+Requirements: JDK 25 and Apache Maven 3.9 or newer.
 
 ```powershell
 mvn test
-```
-
-## Run
-
-Launches the Swing level-selection menu:
-
-```powershell
 mvn compile
 java -cp target\classes com.test.sudoku.Main
 ```
 
-## Puzzle generation
+The application opens at the level-selection menu. Choose Easy, Medium, or Hard
+to start a game. After a loss, choose Try again for a new puzzle at the same
+difficulty or Choose level to return to the menu.
 
-The generator creates a randomized, valid completed grid, then removes values while
-checking that exactly one solution remains. Difficulty is based on the number of
-pre-filled cells: Easy has 38–40, Medium 30–34, and Hard 24–28. A seeded generator
-overload is available to reproduce puzzles in tests.
+## Project structure
 
-## Game session
+```text
+src/main/java/com/test/sudoku/
+  Main.java                 Application entry point
+  logic/                    Rules, solver, generator, and game-session logic
+  model/                    Board, difficulty, and cell-position types
+  ui/                       Swing menu, board, HUD, dialogs, and navigation
+src/test/java/com/test/sudoku/
+  logic/                    Model and game-logic tests
+  ui/                       Swing component and navigation tests
+```
 
-`GameSession` owns the current puzzle and solution, accepts only correct player
-entries, and records an incorrect entry as a strike without changing the board.
-After three strikes, further moves are rejected until a new game is started.
-Givens cannot be edited; entering 0 clears a player-entered cell.
-The game HUD displays strikes remaining. Game over offers a retry or level selection;
-finishing a puzzle returns to level selection.
-
-## Menu
-
-The Swing menu offers Easy, Medium, and Hard selections and reports the selected
-difficulty to its host window. Each option shows its clue range and a short level
-description.
-
-## Board controls
-
-The board uses a white background with black numbers and grid lines; thicker lines
-separate the 3x3 boxes. Select a cell, then enter 1-9 on the keyboard or use the
-on-screen number pad. Backspace, Delete, or the Clear button removes a player entry.
+The generator exposes a seeded overload so puzzles can be reproduced in tests.

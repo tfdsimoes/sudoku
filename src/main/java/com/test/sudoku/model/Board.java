@@ -8,7 +8,10 @@ import java.util.Arrays;
  */
 public final class Board {
 
+    /** Number of rows and columns in a Sudoku board. */
     public static final int SIZE = 9;
+
+    /** Number of rows and columns in each box. */
     public static final int BOX_SIZE = 3;
 
     private final int[][] values;
@@ -44,7 +47,14 @@ public final class Board {
         this.givens = givens;
     }
 
-    /** Returns the value at a position, 0 when empty. */
+    /**
+     * Returns the value at a position, 0 when empty.
+     *
+     * @param row zero-based row index
+     * @param col zero-based column index
+     * @return the cell value
+     * @throws IndexOutOfBoundsException if the cell is outside the board
+     */
     public int getValue(int row, int col) {
         checkIndex(row, col);
         return values[row][col];
@@ -53,7 +63,11 @@ public final class Board {
     /**
      * Sets a non-given cell.
      *
+     * @param row zero-based row index
+     * @param col zero-based column index
      * @param value 0 to clear the cell, or 1-9
+     * @throws IndexOutOfBoundsException if the cell is outside the board
+     * @throws IllegalArgumentException if value is outside 0-9
      * @throws IllegalStateException if the cell is a given
      */
     public void setValue(int row, int col, int value) {
@@ -65,18 +79,35 @@ public final class Board {
         values[row][col] = value;
     }
 
-    /** Returns true when the cell was a given at construction time. */
+    /**
+     * Returns true when the cell was a given at construction time.
+     *
+     * @param row zero-based row index
+     * @param col zero-based column index
+     * @return whether the cell is a fixed clue
+     * @throws IndexOutOfBoundsException if the cell is outside the board
+     */
     public boolean isGiven(int row, int col) {
         checkIndex(row, col);
         return givens[row][col];
     }
 
-    /** Returns true when the cell has no value. */
+    /**
+     * Returns true when the cell has no value.
+     *
+     * @param row zero-based row index
+     * @param col zero-based column index
+     * @return whether the cell is empty
+     */
     public boolean isEmpty(int row, int col) {
         return getValue(row, col) == 0;
     }
 
-    /** Returns the number of givens on the board. */
+    /**
+     * Returns the number of fixed clues on the board.
+     *
+     * @return the number of non-empty cells marked as givens
+     */
     public int countGivens() {
         int count = 0;
         for (boolean[] rowGivens : givens) {
@@ -89,7 +120,11 @@ public final class Board {
         return count;
     }
 
-    /** Returns a deep copy of this board, including its givens. */
+    /**
+     * Returns a deep copy of this board, including its givens.
+     *
+     * @return an independent board copy
+     */
     public Board copy() {
         int[][] valuesCopy = new int[SIZE][];
         boolean[][] givensCopy = new boolean[SIZE][];
@@ -100,7 +135,11 @@ public final class Board {
         return new Board(valuesCopy, givensCopy);
     }
 
-    /** Returns a deep copy of the values as a new array. */
+    /**
+     * Returns a deep copy of the values as a new array.
+     *
+     * @return an independent 9x9 grid
+     */
     public int[][] toArray() {
         int[][] result = new int[SIZE][];
         for (int row = 0; row < SIZE; row++) {
@@ -109,6 +148,7 @@ public final class Board {
         return result;
     }
 
+    /** Compares both cell values and which cells are fixed clues. */
     @Override
     public boolean equals(Object other) {
         if (this == other) {
@@ -120,6 +160,7 @@ public final class Board {
         return Arrays.deepEquals(values, board.values) && Arrays.deepEquals(givens, board.givens);
     }
 
+    /** Returns a hash consistent with {@link #equals(Object)}. */
     @Override
     public int hashCode() {
         return 31 * Arrays.deepHashCode(values) + Arrays.deepHashCode(givens);
