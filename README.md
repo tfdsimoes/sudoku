@@ -59,3 +59,14 @@ src/test/java/com/test/sudoku/
 ```
 
 The generator exposes a seeded overload so puzzles can be reproduced in tests.
+
+## Verification
+
+Run the complete Maven verification lifecycle, including the automated tests:
+
+```powershell
+mvn verify
+```
+
+For a desktop smoke test, launch the app and check each difficulty, correct and
+incorrect entries, the three-strike game-over choices, retry, and the win dialog.
