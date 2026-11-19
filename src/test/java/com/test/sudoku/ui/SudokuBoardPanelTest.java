@@ -9,7 +9,9 @@ import com.test.sudoku.logic.SudokuSolver;
 import com.test.sudoku.model.Board;
 import com.test.sudoku.model.Difficulty;
 import com.test.sudoku.model.Position;
+import java.awt.Component;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.concurrent.atomic.AtomicReference;
@@ -17,6 +19,42 @@ import javax.swing.SwingUtilities;
 import org.junit.jupiter.api.Test;
 
 class SudokuBoardPanelTest {
+
+    @Test
+    void draggingAcrossBoardDoesNotChangeSelection() throws Exception {
+        GameSession session = new GameSession(Difficulty.EASY, 10);
+        AtomicReference<SudokuBoardPanel> panelRef = new AtomicReference<>();
+        SwingUtilities.invokeAndWait(() -> {
+            SudokuBoardPanel panel = new SudokuBoardPanel(session, result -> { });
+            Component grid = panel.getComponent(0);
+            grid.setSize(540, 540);
+            grid.dispatchEvent(mouseEvent(grid, MouseEvent.MOUSE_PRESSED,
+                    300, 300, 1, MouseEvent.BUTTON1));
+            grid.dispatchEvent(mouseEvent(grid, MouseEvent.MOUSE_DRAGGED,
+                    450, 450, 1, MouseEvent.NOBUTTON));
+            grid.dispatchEvent(mouseEvent(grid, MouseEvent.MOUSE_RELEASED,
+                    450, 450, 1, MouseEvent.BUTTON1));
+            panelRef.set(panel);
+        });
+
+        assertEquals(new Position(0, 0), panelRef.get().getSelectedCell());
+    }
+
+    @Test
+    void completedLeftClickSelectsTheCell() throws Exception {
+        GameSession session = new GameSession(Difficulty.EASY, 9);
+        AtomicReference<SudokuBoardPanel> panelRef = new AtomicReference<>();
+        SwingUtilities.invokeAndWait(() -> {
+            SudokuBoardPanel panel = new SudokuBoardPanel(session, result -> { });
+            Component grid = panel.getComponent(0);
+            grid.setSize(540, 540);
+            grid.dispatchEvent(mouseEvent(grid, MouseEvent.MOUSE_CLICKED,
+                    300, 300, 1, MouseEvent.BUTTON1));
+            panelRef.set(panel);
+        });
+
+        assertEquals(new Position(5, 5), panelRef.get().getSelectedCell());
+    }
 
     @Test
     void mapsGridCoordinatesToCellsAndRejectsOutsidePoints() {
@@ -85,5 +123,13 @@ class SudokuBoardPanelTest {
             }
         }
         throw new AssertionError("Generated puzzle must have empty cells");
+    }
+
+    private static MouseEvent mouseEvent(Component source, int eventId, int x, int y,
+                                         int clickCount, int button) {
+        int modifiers = eventId == MouseEvent.MOUSE_DRAGGED
+                ? MouseEvent.BUTTON1_DOWN_MASK : 0;
+        return new MouseEvent(source, eventId, System.currentTimeMillis(), modifiers,
+                x, y, clickCount, false, button);
     }
 }

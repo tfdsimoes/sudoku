@@ -203,9 +203,11 @@ public final class SudokuBoardPanel extends JPanel {
             setMinimumSize(new Dimension(270, 270));
             addMouseListener(new MouseAdapter() {
                 @Override
-                public void mousePressed(MouseEvent event) {
-                    cellAtPoint(event.getX(), event.getY(), getWidth(), getHeight())
-                            .ifPresent(position -> selectCell(position.row(), position.col()));
+                public void mouseClicked(MouseEvent event) {
+                    if (event.getButton() == MouseEvent.BUTTON1 && event.getClickCount() == 1) {
+                        cellAtPoint(event.getX(), event.getY(), getWidth(), getHeight())
+                                .ifPresent(position -> selectCell(position.row(), position.col()));
+                    }
                 }
             });
         }
