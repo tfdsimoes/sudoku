@@ -25,3 +25,10 @@ The generator creates a randomized, valid completed grid, then removes values wh
 checking that exactly one solution remains. Difficulty is based on the number of
 pre-filled cells: Easy has 38–40, Medium 30–34, and Hard 24–28. A seeded generator
 overload is available to reproduce puzzles in tests.
+
+## Game session
+
+`GameSession` owns the current puzzle and solution, accepts only correct player
+entries, and records an incorrect entry as a strike without changing the board.
+After three strikes, further moves are rejected until a new game is started.
+Givens cannot be edited; entering 0 clears a player-entered cell.
