@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.test.sudoku.model.Board;
 import com.test.sudoku.model.Difficulty;
+import com.test.sudoku.model.Position;
 import org.junit.jupiter.api.Test;
 
 class GameSessionTest {
@@ -142,6 +143,58 @@ class GameSessionTest {
         Board externalCopy = session.getBoard();
         externalCopy.setValue(row, col, solution.getValue(row, col));
         assertTrue(session.getBoard().isEmpty(row, col));
+    }
+
+    @Test
+    void revealingRandomEmptyCellFillsCorrectValueWithoutStrike() {
+        GameSession session = new GameSession(Difficulty.EASY, 8);
+        Board puzzle = session.getBoard();
+        Board solution = SudokuSolver.solve(puzzle).orElseThrow();
+
+        GameSession.Hint hint = session.revealRandomEmptyCell().orElseThrow();
+        Position position = hint.position();
+
+        assertTrue(puzzle.isEmpty(position.row(), position.col()));
+        assertEquals(solution.getValue(position.row(), position.col()), hint.value());
+        assertEquals(hint.value(),
+                session.getBoard().getValue(position.row(), position.col()));
+        assertEquals(GameSession.MoveResult.CORRECT, hint.result());
+        assertEquals(0, session.getStrikes());
+        assertFalse(session.isGameOver());
+    }
+
+    @Test
+    void revealingHintAfterWinningDoesNothing() {
+        GameSession session = new GameSession(Difficulty.EASY, 9);
+        Board puzzle = session.getBoard();
+        Board solution = SudokuSolver.solve(puzzle).orElseThrow();
+        for (int row = 0; row < Board.SIZE; row++) {
+            for (int col = 0; col < Board.SIZE; col++) {
+                if (!puzzle.isGiven(row, col)) {
+                    session.enterValue(row, col, solution.getValue(row, col));
+                }
+            }
+        }
+
+        assertTrue(session.isWon());
+        assertTrue(session.revealRandomEmptyCell().isEmpty());
+    }
+
+    @Test
+    void revealingHintAfterGameOverDoesNothing() {
+        GameSession session = new GameSession(Difficulty.EASY, 10);
+        Board puzzle = session.getBoard();
+        Board solution = SudokuSolver.solve(puzzle).orElseThrow();
+        int[] emptyCell = findEmptyCell(puzzle);
+        int row = emptyCell[0];
+        int col = emptyCell[1];
+        int wrongValue = solution.getValue(row, col) % Board.SIZE + 1;
+        for (int strike = 0; strike < GameSession.MAX_STRIKES; strike++) {
+            session.enterValue(row, col, wrongValue);
+        }
+
+        assertTrue(session.isGameOver());
+        assertTrue(session.revealRandomEmptyCell().isEmpty());
     }
 
     private static int[] findEmptyCell(Board board) {

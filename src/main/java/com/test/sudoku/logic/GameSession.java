@@ -2,7 +2,11 @@ package com.test.sudoku.logic;
 
 import com.test.sudoku.model.Board;
 import com.test.sudoku.model.Difficulty;
+import com.test.sudoku.model.Position;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Random;
 
 /**
@@ -99,6 +103,34 @@ public final class GameSession {
     }
 
     /**
+     * Reveals the solution value in a randomly selected empty cell.
+     *
+     * @return the revealed hint, or empty if the game has ended or no cells remain
+     */
+    public Optional<Hint> revealRandomEmptyCell() {
+        if (gameOver || won) {
+            return Optional.empty();
+        }
+
+        List<Position> emptyCells = new ArrayList<>();
+        for (int row = 0; row < Board.SIZE; row++) {
+            for (int col = 0; col < Board.SIZE; col++) {
+                if (board.isEmpty(row, col)) {
+                    emptyCells.add(new Position(row, col));
+                }
+            }
+        }
+        if (emptyCells.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Position position = emptyCells.get(seedSource.nextInt(emptyCells.size()));
+        int value = solution.getValue(position.row(), position.col());
+        MoveResult result = enterValue(position.row(), position.col(), value);
+        return Optional.of(new Hint(position, value, result));
+    }
+
+    /**
      * Returns whether the active game has ended due to three strikes.
      *
      * @return whether the session is game over
@@ -176,4 +208,7 @@ public final class GameSession {
         /** The puzzle was completed, or the game was already won. */
         WON
     }
+
+    /** A correct value revealed in an empty cell. */
+    public record Hint(Position position, int value, MoveResult result) { }
 }
