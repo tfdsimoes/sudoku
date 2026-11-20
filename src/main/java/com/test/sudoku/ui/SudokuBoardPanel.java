@@ -33,6 +33,8 @@ public final class SudokuBoardPanel extends JPanel {
 
     private static final Color BOARD_WHITE = Color.WHITE;
     private static final Color GRID_BLACK = Color.BLACK;
+    private static final Color HINT_RED = new Color(139, 0, 0);
+    private static final Color PLAYER_BLUE = new Color(0, 0, 139);
     private static final Color SELECTION_GRAY = new Color(232, 232, 232);
 
     private final GameSession session;
@@ -127,6 +129,13 @@ public final class SudokuBoardPanel extends JPanel {
             return OptionalInt.of(keyCode - KeyEvent.VK_NUMPAD0);
         }
         return OptionalInt.empty();
+    }
+
+    static Color numberColor(boolean isGiven, boolean isHint) {
+        if (isGiven) {
+            return GRID_BLACK;
+        }
+        return isHint ? HINT_RED : PLAYER_BLUE;
     }
 
     JButton getHelpButton() {
@@ -259,15 +268,18 @@ public final class SudokuBoardPanel extends JPanel {
                     }
                     int value = board.getValue(row, col);
                     if (value != 0) {
-                        paintValue(g, value, x1, y1, x2, y2);
+                        Color color = numberColor(board.isGiven(row, col),
+                                session.isHint(row, col));
+                        paintValue(g, value, x1, y1, x2, y2, color);
                     }
                 }
             }
         }
 
-        private void paintValue(Graphics2D g, int value, int x1, int y1, int x2, int y2) {
+        private void paintValue(Graphics2D g, int value, int x1, int y1, int x2, int y2,
+                                Color color) {
             int cellSize = Math.min(x2 - x1, y2 - y1);
-            g.setColor(GRID_BLACK);
+            g.setColor(color);
             g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, Math.max(12, cellSize / 2)));
             var metrics = g.getFontMetrics();
             String text = Integer.toString(value);

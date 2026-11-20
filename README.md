@@ -33,8 +33,9 @@ keeps another unique puzzle within the selected difficulty range when available.
 - Press Backspace or Delete to erase a player-entered value.
 - Click Help to reveal the correct value in a random empty cell without adding a
   strike. The revealed cell becomes selected.
-- The selected cell is highlighted in light gray. The board and its numbers are
-  white and black, with thicker black lines separating the 3x3 boxes.
+- Given numbers are black, player-entered numbers are dark blue, and Help-revealed
+  numbers are dark red. The board is white, with thicker black lines separating
+  the 3x3 boxes; the selected cell is highlighted in light gray.
 
 ## Build and run
 
