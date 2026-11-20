@@ -42,6 +42,8 @@ keeps another unique puzzle within the selected difficulty range when available.
 - Given numbers are black, player-entered numbers are dark blue, and Help-revealed
   numbers are dark red. The board is white, with thicker black lines separating
   the 3x3 boxes; the selected cell is highlighted in light gray.
+- During a game, New game starts a new puzzle at the same difficulty, and Back to
+  menu returns to level selection. Progress in the current puzzle is discarded.
 
 ## Build and run
 
@@ -56,7 +58,8 @@ java -cp target\classes com.test.sudoku.Main --unlimited-help
 
 The application opens at the level-selection menu. Choose Easy, Medium, or Hard
 to start a game. After a loss, choose Try again for a new puzzle at the same
-difficulty or Choose level to return to the menu. The default launch allows
+difficulty or Choose level to return to the menu. You can also leave a game at
+any time with the New game and Back to menu buttons. The default launch allows
 three Help uses per game; add `--unlimited-help` to run with unlimited Help,
 displayed as `Help (∞)`.
 
