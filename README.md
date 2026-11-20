@@ -53,8 +53,8 @@ Requirements: JDK 25 and Apache Maven 3.9 or newer.
 ```powershell
 mvn test
 mvn compile
-java -cp target\classes com.test.sudoku.Main
-java -cp target\classes com.test.sudoku.Main --unlimited-help
+java -cp target\classes com.tfdsimoes.sudoku.Main
+java -cp target\classes com.tfdsimoes.sudoku.Main --unlimited-help
 ```
 
 The application opens at the level-selection menu. Choose Easy, Medium, or Hard
@@ -67,12 +67,12 @@ displayed as `Help (∞)`.
 ## Project structure
 
 ```text
-src/main/java/com/test/sudoku/
+src/main/java/com/tfdsimoes/sudoku/
   Main.java                 Application entry point
   logic/                    Rules, solver, generator, and game-session logic
   model/                    Board, difficulty, and cell-position types
   ui/                       Swing menu, board, HUD, dialogs, and navigation
-src/test/java/com/test/sudoku/
+src/test/java/com/tfdsimoes/sudoku/
   logic/                    Model and game-logic tests
   ui/                       Swing component and navigation tests
 ```
