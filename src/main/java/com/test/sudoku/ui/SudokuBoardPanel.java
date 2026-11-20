@@ -155,11 +155,14 @@ public final class SudokuBoardPanel extends JPanel {
     }
 
     private void updateHelpButton() {
-        int remaining = session.getRemainingHints();
-        helpButton.setText("Help (" + remaining + ")");
-        helpButton.setEnabled(remaining > 0);
-        helpButton.getAccessibleContext().setAccessibleName(
-                "Reveal a random correct cell, " + remaining + " uses remaining");
+        OptionalInt remaining = session.getRemainingHints();
+        String count = remaining.isPresent()
+                ? Integer.toString(remaining.getAsInt()) : "\u221e";
+        helpButton.setText("Help (" + count + ")");
+        helpButton.setEnabled(remaining.isEmpty() || remaining.getAsInt() > 0);
+        helpButton.getAccessibleContext().setAccessibleName(remaining.isEmpty()
+                ? "Reveal a random correct cell, unlimited uses"
+                : "Reveal a random correct cell, " + remaining.getAsInt() + " uses remaining");
     }
 
     private void revealHint() {

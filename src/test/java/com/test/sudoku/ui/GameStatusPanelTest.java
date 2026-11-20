@@ -84,6 +84,26 @@ class GameStatusPanelTest {
     }
 
     @Test
+    void explainsThatCorrectlyFilledCellsAreLocked() throws Exception {
+        GameSession session = new GameSession(Difficulty.EASY, 25);
+        Board puzzle = session.getBoard();
+        Board solution = SudokuSolver.solve(puzzle).orElseThrow();
+        Position emptyCell = findEmptyCell(puzzle);
+        session.enterValue(emptyCell.row(), emptyCell.col(),
+                solution.getValue(emptyCell.row(), emptyCell.col()));
+        AtomicReference<GameStatusPanel> statusRef = new AtomicReference<>();
+
+        SwingUtilities.invokeAndWait(() -> {
+            GameStatusPanel status = new GameStatusPanel(session);
+            status.update(session, GameSession.MoveResult.LOCKED_CELL);
+            statusRef.set(status);
+        });
+
+        assertEquals("This correct number is locked and cannot be changed.",
+                statusRef.get().getFeedbackText());
+    }
+
+    @Test
     void incorrectFeedbackUsesReservedSpaceAndSurvivesSubsequentMoves() throws Exception {
         GameSession session = new GameSession(Difficulty.EASY, 24);
         Board puzzle = session.getBoard();

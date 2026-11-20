@@ -75,6 +75,10 @@ public final class GameStatusPanel extends JPanel {
                     ? "Incorrect number. You lost your final strike; game over."
                     : "Incorrect number. One strike used. "
                     + session.getRemainingStrikes() + " strikes remaining.");
+        } else if (result == GameSession.MoveResult.LOCKED_CELL) {
+            showFeedback("This correct number is locked and cannot be changed.");
+        } else if (result == GameSession.MoveResult.GIVEN_CELL) {
+            showFeedback("Given numbers cannot be changed.");
         }
     }
 

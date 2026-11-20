@@ -30,7 +30,8 @@ keeps another unique puzzle within the selected difficulty range when available.
   Dragging across the board does not move the selection. The game asks you to
   select a cell first, and ignores number input until one is selected.
 - Enter a digit with the keyboard's number row or numeric keypad.
-- Press Backspace or Delete to erase a player-entered value.
+- Once a correct value is entered or revealed by Help, that cell is locked.
+  Further input cannot change it or add a strike.
 - Click Help to reveal the correct value in a random empty cell without adding a
   strike. You can use Help three times per game; the button shows remaining uses
   and is disabled when they run out. The revealed cell becomes selected.
@@ -50,11 +51,14 @@ Requirements: JDK 25 and Apache Maven 3.9 or newer.
 mvn test
 mvn compile
 java -cp target\classes com.test.sudoku.Main
+java -cp target\classes com.test.sudoku.Main --unlimited-help
 ```
 
 The application opens at the level-selection menu. Choose Easy, Medium, or Hard
 to start a game. After a loss, choose Try again for a new puzzle at the same
-difficulty or Choose level to return to the menu.
+difficulty or Choose level to return to the menu. The default launch allows
+three Help uses per game; add `--unlimited-help` to run with unlimited Help,
+displayed as `Help (∞)`.
 
 ## Project structure
 

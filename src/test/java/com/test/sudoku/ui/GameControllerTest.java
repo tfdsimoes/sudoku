@@ -3,6 +3,7 @@ package com.test.sudoku.ui;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.test.sudoku.logic.GameSession;
 import com.test.sudoku.model.Difficulty;
@@ -36,6 +37,23 @@ class GameControllerTest {
         view.levelSelection.accept(Difficulty.HARD);
         assertEquals(Difficulty.HARD, view.session.getDifficulty());
         assertEquals(3, view.gameCount);
+    }
+
+    @Test
+    void unlimitedHelpOptionIsAppliedToCreatedSessionsAndRetries() {
+        RecordingViewHost view = new RecordingViewHost();
+        GameController controller = new GameController(view, true);
+
+        controller.showMenu();
+        view.levelSelection.accept(Difficulty.EASY);
+        assertTrue(view.session.getRemainingHints().isEmpty());
+        for (int use = 0; use < GameSession.MAX_HINTS + 2; use++) {
+            assertTrue(view.session.revealRandomEmptyCell().isPresent());
+        }
+
+        view.retry.run();
+
+        assertTrue(view.session.getRemainingHints().isEmpty());
     }
 
     private static final class RecordingViewHost implements GameController.ViewHost {
