@@ -152,7 +152,7 @@ public final class GameSession {
     /**
      * Returns the number of Help hints remaining in the active game.
      *
-     * @return remaining Help uses
+     * @return remaining Help uses, or empty when Help is unlimited
      */
     public OptionalInt getRemainingHints() {
         return unlimitedHelp ? OptionalInt.empty() : OptionalInt.of(remainingHints);
