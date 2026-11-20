@@ -32,7 +32,8 @@ keeps another unique puzzle within the selected difficulty range when available.
 - Enter a digit with the keyboard's number row or numeric keypad.
 - Press Backspace or Delete to erase a player-entered value.
 - Click Help to reveal the correct value in a random empty cell without adding a
-  strike. The revealed cell becomes selected.
+  strike. You can use Help three times per game; the button shows remaining uses
+  and is disabled when they run out. The revealed cell becomes selected.
 - Given numbers are black, player-entered numbers are dark blue, and Help-revealed
   numbers are dark red. The board is white, with thicker black lines separating
   the 3x3 boxes; the selected cell is highlighted in light gray.

@@ -19,6 +19,9 @@ public final class GameSession {
     /** Maximum incorrect entries allowed before the game ends. */
     public static final int MAX_STRIKES = 3;
 
+    /** Maximum Help hints available in one game. */
+    public static final int MAX_HINTS = 3;
+
     private final SudokuGenerator generator = new SudokuGenerator();
     private final Random seedSource;
     private final Set<Position> hintedCells = new HashSet<>();
@@ -26,6 +29,7 @@ public final class GameSession {
     private Board board;
     private Board solution;
     private int strikes;
+    private int remainingHints;
     private boolean gameOver;
     private boolean won;
 
@@ -65,6 +69,7 @@ public final class GameSession {
         board = newBoard;
         solution = newSolution;
         strikes = 0;
+        remainingHints = MAX_HINTS;
         gameOver = false;
         won = false;
         hintedCells.clear();
@@ -120,12 +125,21 @@ public final class GameSession {
     }
 
     /**
+     * Returns the number of Help hints remaining in the active game.
+     *
+     * @return remaining Help uses
+     */
+    public int getRemainingHints() {
+        return remainingHints;
+    }
+
+    /**
      * Reveals the solution value in a randomly selected empty cell.
      *
-     * @return the revealed hint, or empty if the game has ended or no cells remain
+     * @return the revealed hint, or empty if the game ended, no cells remain, or no uses remain
      */
     public Optional<Hint> revealRandomEmptyCell() {
-        if (gameOver || won) {
+        if (gameOver || won || remainingHints == 0) {
             return Optional.empty();
         }
 
@@ -144,7 +158,11 @@ public final class GameSession {
         Position position = emptyCells.get(seedSource.nextInt(emptyCells.size()));
         int value = solution.getValue(position.row(), position.col());
         MoveResult result = enterValue(position.row(), position.col(), value);
+        if (result != MoveResult.CORRECT && result != MoveResult.WON) {
+            throw new IllegalStateException("Could not apply generated hint: " + result);
+        }
         hintedCells.add(position);
+        remainingHints--;
         return Optional.of(new Hint(position, value, result));
     }
 

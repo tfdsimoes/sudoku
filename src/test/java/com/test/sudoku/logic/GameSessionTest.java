@@ -151,6 +151,7 @@ class GameSessionTest {
         Board puzzle = session.getBoard();
         Board solution = SudokuSolver.solve(puzzle).orElseThrow();
 
+        assertEquals(GameSession.MAX_HINTS, session.getRemainingHints());
         GameSession.Hint hint = session.revealRandomEmptyCell().orElseThrow();
         Position position = hint.position();
 
@@ -161,6 +162,31 @@ class GameSessionTest {
         assertEquals(GameSession.MoveResult.CORRECT, hint.result());
         assertEquals(0, session.getStrikes());
         assertFalse(session.isGameOver());
+        assertEquals(GameSession.MAX_HINTS - 1, session.getRemainingHints());
+    }
+
+    @Test
+    void helpIsLimitedToThreeUsesAndDoesNotChangeBoardOnFurtherAttempts() {
+        GameSession session = new GameSession(Difficulty.EASY, 14);
+
+        for (int use = 0; use < GameSession.MAX_HINTS; use++) {
+            assertTrue(session.revealRandomEmptyCell().isPresent());
+        }
+        Board afterThreeHints = session.getBoard();
+
+        assertEquals(0, session.getRemainingHints());
+        assertTrue(session.revealRandomEmptyCell().isEmpty());
+        assertEquals(afterThreeHints, session.getBoard());
+    }
+
+    @Test
+    void startingNewGameResetsHelpUses() {
+        GameSession session = new GameSession(Difficulty.EASY, 15);
+        session.revealRandomEmptyCell();
+
+        session.startNewGame(Difficulty.MEDIUM);
+
+        assertEquals(GameSession.MAX_HINTS, session.getRemainingHints());
     }
 
     @Test
