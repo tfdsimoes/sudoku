@@ -36,7 +36,7 @@ public final class GameScreenPanel extends JPanel {
     }
 
     private void handleMove(GameSession.MoveResult result) {
-        statusPanel.update(session);
+        statusPanel.update(session, result);
         if (result == GameSession.MoveResult.INCORRECT && session.isGameOver()) {
             GameEndDialogs.GameOverChoice choice = GameEndDialogs.showGameOver(this);
             GameEndDialogs.dispatchGameOverChoice(choice, onRetry, onChooseLevel);

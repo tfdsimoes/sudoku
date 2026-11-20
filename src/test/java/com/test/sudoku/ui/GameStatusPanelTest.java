@@ -34,6 +34,52 @@ class GameStatusPanelTest {
                 () -> assertEquals("Strikes left: 2", statusRef.get().getStatusText()));
     }
 
+    @Test
+    void explainsIncorrectMoveAndReportsRemainingStrikes() throws Exception {
+        GameSession session = new GameSession(Difficulty.EASY, 22);
+        Board puzzle = session.getBoard();
+        Board solution = SudokuSolver.solve(puzzle).orElseThrow();
+        Position emptyCell = findEmptyCell(puzzle);
+        int wrongValue = solution.getValue(emptyCell.row(), emptyCell.col()) % Board.SIZE + 1;
+        AtomicReference<GameStatusPanel> statusRef = new AtomicReference<>();
+
+        SwingUtilities.invokeAndWait(() -> {
+            GameStatusPanel status = new GameStatusPanel(session);
+            GameSession.MoveResult result = session.enterValue(
+                    emptyCell.row(), emptyCell.col(), wrongValue);
+            status.update(session, result);
+            statusRef.set(status);
+        });
+
+        assertEquals("Strikes left: 2", statusRef.get().getStatusText());
+        assertEquals("Incorrect number. One strike used. 2 strikes remaining.",
+                statusRef.get().getFeedbackText());
+    }
+
+    @Test
+    void explainsWhenIncorrectMoveUsesFinalStrike() throws Exception {
+        GameSession session = new GameSession(Difficulty.EASY, 23);
+        Board puzzle = session.getBoard();
+        Board solution = SudokuSolver.solve(puzzle).orElseThrow();
+        Position emptyCell = findEmptyCell(puzzle);
+        int wrongValue = solution.getValue(emptyCell.row(), emptyCell.col()) % Board.SIZE + 1;
+        AtomicReference<GameStatusPanel> statusRef = new AtomicReference<>();
+
+        SwingUtilities.invokeAndWait(() -> {
+            GameStatusPanel status = new GameStatusPanel(session);
+            GameSession.MoveResult result = GameSession.MoveResult.CORRECT;
+            for (int strike = 0; strike < GameSession.MAX_STRIKES; strike++) {
+                result = session.enterValue(emptyCell.row(), emptyCell.col(), wrongValue);
+            }
+            status.update(session, result);
+            statusRef.set(status);
+        });
+
+        assertEquals("Strikes left: 0", statusRef.get().getStatusText());
+        assertEquals("Incorrect number. You lost your final strike; game over.",
+                statusRef.get().getFeedbackText());
+    }
+
     private static Position findEmptyCell(Board board) {
         for (int row = 0; row < Board.SIZE; row++) {
             for (int col = 0; col < Board.SIZE; col++) {
