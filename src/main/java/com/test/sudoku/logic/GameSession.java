@@ -4,10 +4,12 @@ import com.test.sudoku.model.Board;
 import com.test.sudoku.model.Difficulty;
 import com.test.sudoku.model.Position;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * Holds the state and rules for one Sudoku game.
@@ -19,6 +21,7 @@ public final class GameSession {
 
     private final SudokuGenerator generator = new SudokuGenerator();
     private final Random seedSource;
+    private final Set<Position> hintedCells = new HashSet<>();
     private Difficulty difficulty;
     private Board board;
     private Board solution;
@@ -64,6 +67,7 @@ public final class GameSession {
         strikes = 0;
         gameOver = false;
         won = false;
+        hintedCells.clear();
     }
 
     /**
@@ -73,6 +77,19 @@ public final class GameSession {
      */
     public Board getBoard() {
         return board.copy();
+    }
+
+    /**
+     * Returns whether a non-empty cell was filled by the Help control.
+     *
+     * @param row zero-based row index
+     * @param col zero-based column index
+     * @return whether the cell currently contains a revealed hint
+     * @throws IndexOutOfBoundsException if the cell is outside the board
+     */
+    public boolean isHint(int row, int col) {
+        board.getValue(row, col);
+        return hintedCells.contains(new Position(row, col));
     }
 
     /**
@@ -127,6 +144,7 @@ public final class GameSession {
         Position position = emptyCells.get(seedSource.nextInt(emptyCells.size()));
         int value = solution.getValue(position.row(), position.col());
         MoveResult result = enterValue(position.row(), position.col(), value);
+        hintedCells.add(position);
         return Optional.of(new Hint(position, value, result));
     }
 
@@ -175,6 +193,7 @@ public final class GameSession {
         }
         if (value == 0) {
             board.setValue(row, col, 0);
+            hintedCells.remove(new Position(row, col));
             return MoveResult.CLEARED;
         }
         if (value != solution.getValue(row, col)) {
@@ -186,6 +205,7 @@ public final class GameSession {
         }
 
         board.setValue(row, col, value);
+        hintedCells.remove(new Position(row, col));
         if (SudokuRules.isSolved(board)) {
             won = true;
             return MoveResult.WON;

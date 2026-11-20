@@ -164,6 +164,39 @@ class GameSessionTest {
     }
 
     @Test
+    void hintEntriesAreTrackedAndBecomePlayerEntriesWhenReentered() {
+        GameSession session = new GameSession(Difficulty.EASY, 11);
+        GameSession.Hint hint = session.revealRandomEmptyCell().orElseThrow();
+        Position position = hint.position();
+
+        assertTrue(session.isHint(position.row(), position.col()));
+        assertEquals(GameSession.MoveResult.CORRECT, session.enterValue(
+                position.row(), position.col(), hint.value()));
+        assertFalse(session.isHint(position.row(), position.col()));
+    }
+
+    @Test
+    void clearingHintRemovesItsHintSource() {
+        GameSession session = new GameSession(Difficulty.EASY, 12);
+        Position position = session.revealRandomEmptyCell().orElseThrow().position();
+
+        assertTrue(session.isHint(position.row(), position.col()));
+        assertEquals(GameSession.MoveResult.CLEARED,
+                session.enterValue(position.row(), position.col(), 0));
+        assertFalse(session.isHint(position.row(), position.col()));
+    }
+
+    @Test
+    void startingNewGameClearsHintSources() {
+        GameSession session = new GameSession(Difficulty.EASY, 13);
+        Position position = session.revealRandomEmptyCell().orElseThrow().position();
+
+        session.startNewGame(Difficulty.MEDIUM);
+
+        assertFalse(session.isHint(position.row(), position.col()));
+    }
+
+    @Test
     void revealingHintAfterWinningDoesNothing() {
         GameSession session = new GameSession(Difficulty.EASY, 9);
         Board puzzle = session.getBoard();

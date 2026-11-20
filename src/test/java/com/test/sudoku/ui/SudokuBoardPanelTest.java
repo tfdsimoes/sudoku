@@ -126,6 +126,13 @@ class SudokuBoardPanelTest {
     }
 
     @Test
+    void numberColorsDistinguishGivenPlayerAndHintValues() {
+        assertEquals(Color.BLACK, SudokuBoardPanel.numberColor(true, false));
+        assertEquals(new Color(0, 0, 139), SudokuBoardPanel.numberColor(false, false));
+        assertEquals(new Color(139, 0, 0), SudokuBoardPanel.numberColor(false, true));
+    }
+
+    @Test
     void keyboardDigitEntersValueAtSelectedCell() throws Exception {
         GameSession session = new GameSession(Difficulty.EASY, 11);
         Board puzzle = session.getBoard();
