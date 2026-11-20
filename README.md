@@ -35,7 +35,9 @@ keeps another unique puzzle within the selected difficulty range when available.
   strike. You can use Help three times per game; the button shows remaining uses
   and is disabled when they run out. The revealed cell becomes selected.
 - An incorrect number displays feedback explaining that a strike was used and
-  how many remain; the third strike displays a game-over message.
+  how many remain; the message has reserved space so the board does not resize,
+  stays visible for three seconds, then fades away gradually. The third strike
+  displays a game-over message.
 - Given numbers are black, player-entered numbers are dark blue, and Help-revealed
   numbers are dark red. The board is white, with thicker black lines separating
   the 3x3 boxes; the selected cell is highlighted in light gray.
