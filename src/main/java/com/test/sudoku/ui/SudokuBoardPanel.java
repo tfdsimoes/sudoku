@@ -61,6 +61,7 @@ public final class SudokuBoardPanel extends JPanel {
         selectionHint.setForeground(new Color(70, 70, 70));
         boardGrid = new BoardGrid();
         helpButton = createHelpButton();
+        updateHelpButton();
         add(selectionHint, BorderLayout.NORTH);
         add(boardGrid, BorderLayout.CENTER);
         add(helpButton, BorderLayout.SOUTH);
@@ -143,8 +144,7 @@ public final class SudokuBoardPanel extends JPanel {
     }
 
     private JButton createHelpButton() {
-        JButton button = new JButton("Help");
-        button.getAccessibleContext().setAccessibleName("Reveal a random correct cell");
+        JButton button = new JButton();
         button.setHorizontalAlignment(SwingConstants.CENTER);
         button.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
         button.setForeground(GRID_BLACK);
@@ -152,6 +152,14 @@ public final class SudokuBoardPanel extends JPanel {
         button.setOpaque(true);
         button.addActionListener(event -> revealHint());
         return button;
+    }
+
+    private void updateHelpButton() {
+        int remaining = session.getRemainingHints();
+        helpButton.setText("Help (" + remaining + ")");
+        helpButton.setEnabled(remaining > 0);
+        helpButton.getAccessibleContext().setAccessibleName(
+                "Reveal a random correct cell, " + remaining + " uses remaining");
     }
 
     private void revealHint() {
@@ -168,6 +176,7 @@ public final class SudokuBoardPanel extends JPanel {
         selectCell(position.row(), position.col());
         selectionHint.setText("Hint: row " + (position.row() + 1)
                 + ", column " + (position.col() + 1) + " is " + revealed.value());
+        updateHelpButton();
         onMove.accept(revealed.result());
     }
 

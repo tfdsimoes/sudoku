@@ -164,7 +164,7 @@ class SudokuBoardPanelTest {
                         new GameSession(Difficulty.EASY, 9), result -> { })));
 
         assertEquals(3, panelRef.get().getComponentCount());
-        assertEquals("Help", panelRef.get().getHelpButton().getText());
+        assertEquals("Help (3)", panelRef.get().getHelpButton().getText());
     }
 
     @Test
@@ -186,6 +186,24 @@ class SudokuBoardPanelTest {
                 session.getBoard().getValue(position.row(), position.col()));
         assertEquals(GameSession.MoveResult.CORRECT, result.get());
         assertEquals(0, session.getStrikes());
+        assertEquals("Help (2)", panelRef.get().getHelpButton().getText());
+    }
+
+    @Test
+    void helpButtonDisablesAfterThreeUses() throws Exception {
+        GameSession session = new GameSession(Difficulty.EASY, 14);
+        AtomicReference<SudokuBoardPanel> panelRef = new AtomicReference<>();
+        SwingUtilities.invokeAndWait(() -> {
+            SudokuBoardPanel panel = new SudokuBoardPanel(session, result -> { });
+            panelRef.set(panel);
+            panel.getHelpButton().doClick();
+            panel.getHelpButton().doClick();
+            panel.getHelpButton().doClick();
+        });
+
+        assertEquals("Help (0)", panelRef.get().getHelpButton().getText());
+        assertFalse(panelRef.get().getHelpButton().isEnabled());
+        assertEquals(0, session.getRemainingHints());
     }
 
     @Test
