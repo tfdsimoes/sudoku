@@ -203,17 +203,35 @@ class SudokuBoardPanelTest {
 
         assertEquals("Help (0)", panelRef.get().getHelpButton().getText());
         assertFalse(panelRef.get().getHelpButton().isEnabled());
-        assertEquals(0, session.getRemainingHints());
+        assertEquals(OptionalInt.of(0), session.getRemainingHints());
     }
 
     @Test
-    void backspaceClearsSelectedPlayerEntry() throws Exception {
+    void unlimitedHelpButtonRemainsAvailableAndShowsInfinity() throws Exception {
+        GameSession session = new GameSession(Difficulty.EASY, 15, true);
+        AtomicReference<SudokuBoardPanel> panelRef = new AtomicReference<>();
+        SwingUtilities.invokeAndWait(() -> {
+            SudokuBoardPanel panel = new SudokuBoardPanel(session, result -> { });
+            panelRef.set(panel);
+            assertEquals("Help (\u221e)", panel.getHelpButton().getText());
+            for (int use = 0; use < GameSession.MAX_HINTS + 2; use++) {
+                panel.getHelpButton().doClick();
+            }
+        });
+
+        assertTrue(panelRef.get().getHelpButton().isEnabled());
+        assertEquals("Help (\u221e)", panelRef.get().getHelpButton().getText());
+        assertTrue(session.getRemainingHints().isEmpty());
+    }
+
+    @Test
+    void backspaceCannotClearLockedPlayerEntry() throws Exception {
         GameSession session = new GameSession(Difficulty.EASY, 12);
         Board puzzle = session.getBoard();
         Board solution = SudokuSolver.solve(puzzle).orElseThrow();
         Position emptyCell = findEmptyCell(puzzle);
-        session.enterValue(emptyCell.row(), emptyCell.col(),
-                solution.getValue(emptyCell.row(), emptyCell.col()));
+        int correctValue = solution.getValue(emptyCell.row(), emptyCell.col());
+        session.enterValue(emptyCell.row(), emptyCell.col(), correctValue);
         AtomicReference<GameSession.MoveResult> result = new AtomicReference<>();
         SwingUtilities.invokeAndWait(() -> {
             SudokuBoardPanel panel = new SudokuBoardPanel(session, result::set);
@@ -221,9 +239,33 @@ class SudokuBoardPanelTest {
             invokeKeyAction((JComponent) panel.getComponent(1), KeyEvent.VK_BACK_SPACE);
         });
 
-        assertEquals(GameSession.MoveResult.CLEARED, result.get());
-        assertTrue(session.getBoard().isEmpty(emptyCell.row(), emptyCell.col()));
+        assertEquals(GameSession.MoveResult.LOCKED_CELL, result.get());
+        assertEquals(correctValue,
+                session.getBoard().getValue(emptyCell.row(), emptyCell.col()));
         assertFalse(session.isGameOver());
+    }
+
+    @Test
+    void enteringAnotherNumberInLockedCellDoesNotAddStrike() throws Exception {
+        GameSession session = new GameSession(Difficulty.EASY, 16);
+        Board puzzle = session.getBoard();
+        Board solution = SudokuSolver.solve(puzzle).orElseThrow();
+        Position emptyCell = findEmptyCell(puzzle);
+        int correctValue = solution.getValue(emptyCell.row(), emptyCell.col());
+        int wrongValue = correctValue % Board.SIZE + 1;
+        session.enterValue(emptyCell.row(), emptyCell.col(), correctValue);
+        AtomicReference<GameSession.MoveResult> result = new AtomicReference<>();
+
+        SwingUtilities.invokeAndWait(() -> {
+            SudokuBoardPanel panel = new SudokuBoardPanel(session, result::set);
+            panel.selectCell(emptyCell.row(), emptyCell.col());
+            invokeKeyAction((JComponent) panel.getComponent(1), KeyEvent.VK_0 + wrongValue);
+        });
+
+        assertEquals(GameSession.MoveResult.LOCKED_CELL, result.get());
+        assertEquals(0, session.getStrikes());
+        assertEquals(correctValue,
+                session.getBoard().getValue(emptyCell.row(), emptyCell.col()));
     }
 
     private static Position findEmptyCell(Board board) {

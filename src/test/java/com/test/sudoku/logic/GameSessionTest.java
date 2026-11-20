@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.test.sudoku.model.Board;
 import com.test.sudoku.model.Difficulty;
 import com.test.sudoku.model.Position;
+import java.util.OptionalInt;
 import org.junit.jupiter.api.Test;
 
 class GameSessionTest {
@@ -27,6 +28,26 @@ class GameSessionTest {
         assertEquals(0, session.getStrikes());
         assertEquals(GameSession.MAX_STRIKES, session.getRemainingStrikes());
         assertFalse(session.isGameOver());
+    }
+
+    @Test
+    void correctlyFilledCellIsLockedAgainstFurtherNumbersAndClearing() {
+        GameSession session = new GameSession(Difficulty.EASY, 16);
+        Board puzzle = session.getBoard();
+        Board solution = SudokuSolver.solve(puzzle).orElseThrow();
+        int[] emptyCell = findEmptyCell(puzzle);
+        int row = emptyCell[0];
+        int col = emptyCell[1];
+        int correctValue = solution.getValue(row, col);
+        int wrongValue = correctValue % Board.SIZE + 1;
+
+        assertEquals(GameSession.MoveResult.CORRECT,
+                session.enterValue(row, col, correctValue));
+        assertEquals(GameSession.MoveResult.LOCKED_CELL,
+                session.enterValue(row, col, wrongValue));
+        assertEquals(GameSession.MoveResult.LOCKED_CELL, session.enterValue(row, col, 0));
+        assertEquals(correctValue, session.getBoard().getValue(row, col));
+        assertEquals(0, session.getStrikes());
     }
 
     @Test
@@ -128,20 +149,18 @@ class GameSessionTest {
     }
 
     @Test
-    void clearingCellDoesNotAddStrikeAndBoardIsDefensiveCopy() {
+    void clearingEmptyCellDoesNotAddStrikeAndBoardIsDefensiveCopy() {
         GameSession session = new GameSession(Difficulty.EASY, 7);
         Board puzzle = session.getBoard();
-        Board solution = SudokuSolver.solve(puzzle).orElseThrow();
         int[] emptyCell = findEmptyCell(puzzle);
         int row = emptyCell[0];
         int col = emptyCell[1];
-        session.enterValue(row, col, solution.getValue(row, col));
 
         assertEquals(GameSession.MoveResult.CLEARED, session.enterValue(row, col, 0));
         assertEquals(0, session.getStrikes());
 
         Board externalCopy = session.getBoard();
-        externalCopy.setValue(row, col, solution.getValue(row, col));
+        externalCopy.setValue(row, col, 1);
         assertTrue(session.getBoard().isEmpty(row, col));
     }
 
@@ -151,7 +170,7 @@ class GameSessionTest {
         Board puzzle = session.getBoard();
         Board solution = SudokuSolver.solve(puzzle).orElseThrow();
 
-        assertEquals(GameSession.MAX_HINTS, session.getRemainingHints());
+        assertEquals(OptionalInt.of(GameSession.MAX_HINTS), session.getRemainingHints());
         GameSession.Hint hint = session.revealRandomEmptyCell().orElseThrow();
         Position position = hint.position();
 
@@ -162,7 +181,7 @@ class GameSessionTest {
         assertEquals(GameSession.MoveResult.CORRECT, hint.result());
         assertEquals(0, session.getStrikes());
         assertFalse(session.isGameOver());
-        assertEquals(GameSession.MAX_HINTS - 1, session.getRemainingHints());
+        assertEquals(OptionalInt.of(GameSession.MAX_HINTS - 1), session.getRemainingHints());
     }
 
     @Test
@@ -174,7 +193,7 @@ class GameSessionTest {
         }
         Board afterThreeHints = session.getBoard();
 
-        assertEquals(0, session.getRemainingHints());
+        assertEquals(OptionalInt.of(0), session.getRemainingHints());
         assertTrue(session.revealRandomEmptyCell().isEmpty());
         assertEquals(afterThreeHints, session.getBoard());
     }
@@ -186,30 +205,56 @@ class GameSessionTest {
 
         session.startNewGame(Difficulty.MEDIUM);
 
-        assertEquals(GameSession.MAX_HINTS, session.getRemainingHints());
+        assertEquals(OptionalInt.of(GameSession.MAX_HINTS), session.getRemainingHints());
     }
 
     @Test
-    void hintEntriesAreTrackedAndBecomePlayerEntriesWhenReentered() {
+    void unlimitedHelpNeverRunsOut() {
+        GameSession session = new GameSession(Difficulty.EASY, 17, true);
+
+        for (int use = 0; use < GameSession.MAX_HINTS + 2; use++) {
+            assertTrue(session.revealRandomEmptyCell().isPresent());
+        }
+
+        assertEquals(OptionalInt.empty(), session.getRemainingHints());
+    }
+
+    @Test
+    void unlimitedHelpRemainsEnabledAfterStartingNewGame() {
+        GameSession session = new GameSession(Difficulty.EASY, 18, true);
+        session.revealRandomEmptyCell();
+
+        session.startNewGame(Difficulty.HARD);
+
+        assertEquals(OptionalInt.empty(), session.getRemainingHints());
+    }
+
+    @Test
+    void hintEntriesAreLockedAndRemainHintsWhenReentered() {
         GameSession session = new GameSession(Difficulty.EASY, 11);
         GameSession.Hint hint = session.revealRandomEmptyCell().orElseThrow();
         Position position = hint.position();
 
         assertTrue(session.isHint(position.row(), position.col()));
-        assertEquals(GameSession.MoveResult.CORRECT, session.enterValue(
+        assertEquals(GameSession.MoveResult.LOCKED_CELL, session.enterValue(
                 position.row(), position.col(), hint.value()));
-        assertFalse(session.isHint(position.row(), position.col()));
+        assertTrue(session.isHint(position.row(), position.col()));
+        assertEquals(0, session.getStrikes());
     }
 
     @Test
-    void clearingHintRemovesItsHintSource() {
+    void helpEntriesCannotBeClearedOrPenalized() {
         GameSession session = new GameSession(Difficulty.EASY, 12);
-        Position position = session.revealRandomEmptyCell().orElseThrow().position();
+        GameSession.Hint hint = session.revealRandomEmptyCell().orElseThrow();
+        Position position = hint.position();
 
         assertTrue(session.isHint(position.row(), position.col()));
-        assertEquals(GameSession.MoveResult.CLEARED,
+        assertEquals(GameSession.MoveResult.LOCKED_CELL,
                 session.enterValue(position.row(), position.col(), 0));
-        assertFalse(session.isHint(position.row(), position.col()));
+        assertTrue(session.isHint(position.row(), position.col()));
+        assertEquals(hint.value(),
+                session.getBoard().getValue(position.row(), position.col()));
+        assertEquals(0, session.getStrikes());
     }
 
     @Test

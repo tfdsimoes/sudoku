@@ -18,6 +18,25 @@ public final class GameController {
     }
 
     /**
+     * Creates a controller for the desktop application.
+     *
+     * @param unlimitedHelp whether game sessions have unlimited Help uses
+     */
+    public GameController(boolean unlimitedHelp) {
+        this(new SwingGameViews(), unlimitedHelp);
+    }
+
+    /**
+     * Creates a controller with replaceable views and a fixed Help allowance.
+     *
+     * @param viewHost target for menu and game screens
+     * @param unlimitedHelp whether game sessions have unlimited Help uses
+     */
+    public GameController(ViewHost viewHost, boolean unlimitedHelp) {
+        this(viewHost, difficulty -> new GameSession(difficulty, unlimitedHelp));
+    }
+
+    /**
      * Creates a controller using the supplied view host.
      *
      * @param viewHost target for menu and game screens

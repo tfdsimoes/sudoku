@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Random;
 import java.util.Set;
 
@@ -25,6 +26,7 @@ public final class GameSession {
     private final SudokuGenerator generator = new SudokuGenerator();
     private final Random seedSource;
     private final Set<Position> hintedCells = new HashSet<>();
+    private final boolean unlimitedHelp;
     private Difficulty difficulty;
     private Board board;
     private Board solution;
@@ -39,7 +41,17 @@ public final class GameSession {
      * @param difficulty the selected difficulty
      */
     public GameSession(Difficulty difficulty) {
-        this(difficulty, new Random().nextLong());
+        this(difficulty, new Random().nextLong(), false);
+    }
+
+    /**
+     * Starts a game with randomly seeded puzzle generation and optional unlimited Help.
+     *
+     * @param difficulty the selected difficulty
+     * @param unlimitedHelp whether Help hints are unlimited
+     */
+    public GameSession(Difficulty difficulty, boolean unlimitedHelp) {
+        this(difficulty, new Random().nextLong(), unlimitedHelp);
     }
 
     /**
@@ -50,7 +62,20 @@ public final class GameSession {
      * @throws NullPointerException if difficulty is null
      */
     public GameSession(Difficulty difficulty, long seed) {
+        this(difficulty, seed, false);
+    }
+
+    /**
+     * Starts a reproducible game with optional unlimited Help.
+     *
+     * @param difficulty the selected difficulty
+     * @param seed the random seed used for this game and subsequent games
+     * @param unlimitedHelp whether Help hints are unlimited
+     * @throws NullPointerException if difficulty is null
+     */
+    public GameSession(Difficulty difficulty, long seed, boolean unlimitedHelp) {
         seedSource = new Random(seed);
+        this.unlimitedHelp = unlimitedHelp;
         startNewGame(difficulty);
     }
 
@@ -127,10 +152,10 @@ public final class GameSession {
     /**
      * Returns the number of Help hints remaining in the active game.
      *
-     * @return remaining Help uses
+     * @return remaining Help uses, or empty when Help is unlimited
      */
-    public int getRemainingHints() {
-        return remainingHints;
+    public OptionalInt getRemainingHints() {
+        return unlimitedHelp ? OptionalInt.empty() : OptionalInt.of(remainingHints);
     }
 
     /**
@@ -139,7 +164,7 @@ public final class GameSession {
      * @return the revealed hint, or empty if the game ended, no cells remain, or no uses remain
      */
     public Optional<Hint> revealRandomEmptyCell() {
-        if (gameOver || won || remainingHints == 0) {
+        if (gameOver || won || (!unlimitedHelp && remainingHints == 0)) {
             return Optional.empty();
         }
 
@@ -162,7 +187,9 @@ public final class GameSession {
             throw new IllegalStateException("Could not apply generated hint: " + result);
         }
         hintedCells.add(position);
-        remainingHints--;
+        if (!unlimitedHelp) {
+            remainingHints--;
+        }
         return Optional.of(new Hint(position, value, result));
     }
 
@@ -185,12 +212,12 @@ public final class GameSession {
     }
 
     /**
-     * Enters a value, or clears a player-entered cell when {@code value} is 0.
+     * Enters a value in an empty cell. Filled cells, including accepted correct entries, are locked.
      * Incorrect values are rejected and add a strike.
      *
      * @param row zero-based row index
      * @param col zero-based column index
-     * @param value 0 to clear or a digit from 1 to 9
+     * @param value 0 to keep an empty cell empty or a digit from 1 to 9
      * @return the outcome of the attempted move
      * @throws IllegalArgumentException if value is outside 0-9
      * @throws IndexOutOfBoundsException if the cell is outside the board
@@ -208,6 +235,9 @@ public final class GameSession {
         }
         if (board.isGiven(row, col)) {
             return MoveResult.GIVEN_CELL;
+        }
+        if (!board.isEmpty(row, col)) {
+            return MoveResult.LOCKED_CELL;
         }
         if (value == 0) {
             board.setValue(row, col, 0);
@@ -235,12 +265,14 @@ public final class GameSession {
     public enum MoveResult {
         /** The correct value was accepted. */
         CORRECT,
-        /** A player-entered value was cleared. */
+        /** The selected cell was already empty. */
         CLEARED,
         /** The value was rejected and a strike was recorded. */
         INCORRECT,
         /** The selected cell is a fixed clue. */
         GIVEN_CELL,
+        /** The cell already contains a correct value and cannot be changed. */
+        LOCKED_CELL,
         /** The game has already ended from strikes. */
         GAME_OVER,
         /** The puzzle was completed, or the game was already won. */
