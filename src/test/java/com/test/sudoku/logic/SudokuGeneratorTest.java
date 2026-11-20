@@ -3,6 +3,7 @@ package com.test.sudoku.logic;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.test.sudoku.model.Board;
@@ -50,29 +51,27 @@ class SudokuGeneratorTest {
     }
 
     @Test
-    void retainsInRangePuzzleWhenExactTargetCannotBeReached() {
-        Board puzzle = generator.generate(Difficulty.HARD, 0);
-        assertTrue(puzzle.countGivens() > Difficulty.HARD.minGivens());
-        Board solution = SudokuSolver.solve(puzzle).orElseThrow();
-        int[] removablePositions = new int[Board.SIZE * Board.SIZE - puzzle.countGivens()];
-        int nextPosition = 0;
-        for (int row = 0; row < Board.SIZE; row++) {
-            for (int col = 0; col < Board.SIZE; col++) {
-                if (!puzzle.isGiven(row, col)) {
-                    removablePositions[nextPosition++] = row * Board.SIZE + col;
-                }
-            }
+    void removeClonesReturnsPuzzleWithExactTargetGivens() {
+        Board solved = SudokuSolver.solve(generator.generate(Difficulty.EASY, 1)).orElseThrow();
+        int[] positions = new int[Board.SIZE * Board.SIZE];
+        for (int i = 0; i < positions.length; i++) {
+            positions[i] = i;
         }
 
-        Board fallback = SudokuGenerator.removeClues(
-                solution.toArray(), Difficulty.HARD, Difficulty.HARD.minGivens(),
-                removablePositions);
+        Board puzzle = SudokuGenerator.removeClues(solved.toArray(), 30, positions);
 
-        assertNotNull(fallback);
-        assertEquals(Difficulty.HARD.maxGivens(), fallback.countGivens());
-        assertTrue(fallback.countGivens() >= Difficulty.HARD.minGivens());
-        assertTrue(fallback.countGivens() <= Difficulty.HARD.maxGivens());
-        assertTrue(SudokuSolver.hasUniqueSolution(fallback));
+        assertNotNull(puzzle);
+        assertEquals(30, puzzle.countGivens());
+        assertTrue(SudokuSolver.hasUniqueSolution(puzzle));
+    }
+
+    @Test
+    void removeClonesReturnsNullWhenTargetCannotBeReached() {
+        Board solved = SudokuSolver.solve(generator.generate(Difficulty.EASY, 1)).orElseThrow();
+
+        Board puzzle = SudokuGenerator.removeClues(solved.toArray(), 30, new int[] {0, 1});
+
+        assertNull(puzzle);
     }
 
     private static void assertGivensPreserved(Board puzzle, Board solution) {
